@@ -141,16 +141,40 @@ function Admin() {
         }
     };
 
-    // Foydalanuvchiga xabar yuborish (zakaz bajarilganligi haqida)
-    const sendToUser = async (orderData) => {
+    // Statusga qarab foydalanuvchiga xabar yuborish
+    const sendStatusMessageToUser = async (orderData, newStatus) => {
         let message = `🍔 FRANK BURGER 🍔\n\n`
-        message += `✅ Sizning zakazingiz BAJARILDI!\n\n`
         message += `🆔 Zakaz ID: ${orderData.orderId}\n`
-        message += `💰 Jami: ${orderData.totalAmount.toLocaleString()} so'm\n`
-        message += `📦 Holati: Bajarilgan ✅\n\n`
-        message += `🎉 Buyurtmangiz muvaffaqiyatli yakunlandi!\n`
-        message += `⭐ Bizni tanlaganingiz uchun rahmat!\n\n`
-        message += `☎️ Savollar uchun: +998 XX XXX XX XX`
+        message += `💰 Jami: ${orderData.totalAmount.toLocaleString()} so'm\n\n`
+        
+        switch(newStatus) {
+            case 'Tayyorlanmoqda':
+                message += `👨‍🍳 Sizning zakazingiz TAYYORLANMOQDA!\n\n`
+                message += `🔧 Oshpazlar buyurtmangizni tayyorlashga kirishdi.\n`
+                message += `⏱️ Tez orada yetkazib berish xizmatiga topshiriladi.\n\n`
+                message += `📦 Holati: Tayyorlanmoqda 🔧`
+                break
+                
+            case 'Yetkazilmoqda':
+                message += `🛵 Sizning zakazingiz YETKAZILMOQDA!\n\n`
+                message += `🚚 Buyurtmangiz yo'lda! Tez orada sizga yetib boradi.\n`
+                message += `📍 Yetkazib beruvchi manzilingizga yo'l oldi.\n\n`
+                message += `📦 Holati: Yetkazilmoqda 🚚`
+                break
+                
+            case 'Bajarilgan':
+                message += `✅ Sizning zakazingiz BAJARILDI!\n\n`
+                message += `🎉 Buyurtmangiz muvaffaqiyatli yakunlandi!\n`
+                message += `⭐ Bizni tanlaganingiz uchun rahmat!\n`
+                message += `🍽️ Yana xush kelibsiz!\n\n`
+                message += `📦 Holati: Bajarilgan ✅`
+                break
+                
+            default:
+                return false
+        }
+        
+        message += `\n\n☎️ Savollar uchun: +998 XX XXX XX XX`
 
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
         
@@ -166,7 +190,7 @@ function Admin() {
             })
             const result = await response.json()
             if (result.ok) {
-                console.log('✅ Foydalanuvchiga bajarilganligi haqida xabar yuborildi')
+                console.log(`✅ Foydalanuvchiga "${newStatus}" xabari yuborildi`)
                 return true
             }
             console.log('Foydalanuvchi xatosi:', result.description)
@@ -190,12 +214,21 @@ function Admin() {
                 setSelectedOrder(prev => ({ ...prev, status: newStatus }));
             }
             
-            // Agar status "Bajarilgan" ga o'zgartirilsa, foydalanuvchiga xabar yuborish
-            if (newStatus === 'Bajarilgan') {
-                await sendToUser(orderData || selectedOrder)
-                showTelegramAlert(`✅ Zakaz #${orderData?.orderId || selectedOrder?.orderId} bajarilgan deb belgilandi va foydalanuvchiga xabar yuborildi!`)
+            // Statusga qarab foydalanuvchiga xabar yuborish
+            const userMessageSent = await sendStatusMessageToUser(orderData || selectedOrder, newStatus)
+            
+            let statusText = ''
+            switch(newStatus) {
+                case 'Tayyorlanmoqda': statusText = 'Tayyorlanmoqda 🔧'; break
+                case 'Yetkazilmoqda': statusText = 'Yetkazilmoqda 🚚'; break
+                case 'Bajarilgan': statusText = 'Bajarilgan ✅'; break
+                default: statusText = newStatus
+            }
+            
+            if (userMessageSent) {
+                showTelegramAlert(`✅ Zakaz statusi "${statusText}" ga o'zgartirildi va foydalanuvchiga xabar yuborildi!`)
             } else {
-                showTelegramAlert(`✅ Zakaz statusi "${newStatus}" ga o'zgartirildi!`)
+                showTelegramAlert(`✅ Zakaz statusi "${statusText}" ga o'zgartirildi! (Foydalanuvchiga xabar yuborilmadi)`)
             }
             
             hapticFeedback()
@@ -212,6 +245,12 @@ function Admin() {
     const getFilteredOrders = () => {
         if (filter === 'new') {
             return orders.filter(o => o.status === 'Yangi');
+        }
+        if (filter === 'preparing') {
+            return orders.filter(o => o.status === 'Tayyorlanmoqda');
+        }
+        if (filter === 'delivering') {
+            return orders.filter(o => o.status === 'Yetkazilmoqda');
         }
         if (filter === 'completed') {
             return orders.filter(o => o.status === 'Bajarilgan');
@@ -331,20 +370,40 @@ function Admin() {
                                 {getStatusText(selectedOrder.status)}
                             </div>
                             
-                            {selectedOrder.status !== 'Bajarilgan' && (
-                                <button 
-                                    className="complete-btn"
-                                    onClick={() => updateOrderStatus(selectedOrder.id, 'Bajarilgan', selectedOrder)}
-                                >
-                                    ✅ Zakazni bajarilgan deb belgilash
-                                </button>
-                            )}
-                            
-                            {selectedOrder.status === 'Bajarilgan' && (
-                                <div className="completed-message">
-                                    ✅ Bu zakaz bajarilgan va foydalanuvchiga xabar yuborilgan
-                                </div>
-                            )}
+                            <div className="status-buttons">
+                                {selectedOrder.status !== 'Tayyorlanmoqda' && selectedOrder.status !== 'Yetkazilmoqda' && selectedOrder.status !== 'Bajarilgan' && (
+                                    <button 
+                                        className="status-btn preparing-btn"
+                                        onClick={() => updateOrderStatus(selectedOrder.id, 'Tayyorlanmoqda', selectedOrder)}
+                                    >
+                                        🔧 Tayyorlanmoqda
+                                    </button>
+                                )}
+                                
+                                {selectedOrder.status === 'Tayyorlanmoqda' && (
+                                    <button 
+                                        className="status-btn delivering-btn"
+                                        onClick={() => updateOrderStatus(selectedOrder.id, 'Yetkazilmoqda', selectedOrder)}
+                                    >
+                                        🚚 Yetkazilmoqda
+                                    </button>
+                                )}
+                                
+                                {selectedOrder.status === 'Yetkazilmoqda' && (
+                                    <button 
+                                        className="status-btn complete-btn"
+                                        onClick={() => updateOrderStatus(selectedOrder.id, 'Bajarilgan', selectedOrder)}
+                                    >
+                                        ✅ Bajarilgan
+                                    </button>
+                                )}
+                                
+                                {selectedOrder.status === 'Bajarilgan' && (
+                                    <div className="completed-message">
+                                        ✅ Bu zakaz bajarilgan
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -357,6 +416,8 @@ function Admin() {
     const stats = {
         total: orders.length,
         new: orders.filter(o => o.status === 'Yangi').length,
+        preparing: orders.filter(o => o.status === 'Tayyorlanmoqda').length,
+        delivering: orders.filter(o => o.status === 'Yetkazilmoqda').length,
         completed: orders.filter(o => o.status === 'Bajarilgan').length
     };
 
@@ -375,7 +436,15 @@ function Admin() {
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{stats.new}</div>
-                    <div className="stat-label">Yangi zakazlar</div>
+                    <div className="stat-label">Yangi</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-value">{stats.preparing}</div>
+                    <div className="stat-label">Tayyorlanmoqda</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-value">{stats.delivering}</div>
+                    <div className="stat-label">Yetkazilmoqda</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{stats.completed}</div>
@@ -384,24 +453,11 @@ function Admin() {
             </div>
 
             <div className="admin-filters">
-                <button 
-                    className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-                    onClick={() => setFilter('all')}
-                >
-                    Hammasi
-                </button>
-                <button 
-                    className={`filter-btn ${filter === 'new' ? 'active' : ''}`}
-                    onClick={() => setFilter('new')}
-                >
-                    🆕 Yangi
-                </button>
-                <button 
-                    className={`filter-btn ${filter === 'completed' ? 'active' : ''}`}
-                    onClick={() => setFilter('completed')}
-                >
-                    ✅ Bajarilgan
-                </button>
+                <button className={`filter-btn ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>Hammasi</button>
+                <button className={`filter-btn ${filter === 'new' ? 'active' : ''}`} onClick={() => setFilter('new')}>🆕 Yangi</button>
+                <button className={`filter-btn ${filter === 'preparing' ? 'active' : ''}`} onClick={() => setFilter('preparing')}>🔧 Tayyorlanmoqda</button>
+                <button className={`filter-btn ${filter === 'delivering' ? 'active' : ''}`} onClick={() => setFilter('delivering')}>🚚 Yetkazilmoqda</button>
+                <button className={`filter-btn ${filter === 'completed' ? 'active' : ''}`} onClick={() => setFilter('completed')}>✅ Bajarilgan</button>
             </div>
 
             <div className="admin-orders">
@@ -419,9 +475,7 @@ function Admin() {
                             <div className="order-header">
                                 <div>
                                     <strong>Zakaz #{order.orderId}</strong>
-                                    <p className="order-date">
-                                        📅 {new Date(order.orderDate).toLocaleString()}
-                                    </p>
+                                    <p className="order-date">📅 {new Date(order.orderDate).toLocaleString()}</p>
                                     <p className="order-telegram">🤖 TG ID: {order.telegramId}</p>
                                 </div>
                                 <div className={`order-status-badge ${getStatusColor(order.status)}`}>
@@ -439,13 +493,9 @@ function Admin() {
                                 
                                 <div className="order-items-preview">
                                     {order.items?.slice(0, 2).map((item, idx) => (
-                                        <span key={idx} className="item-tag">
-                                            {item.name} x{item.quantity}
-                                        </span>
+                                        <span key={idx} className="item-tag">{item.name} x{item.quantity}</span>
                                     ))}
-                                    {order.items?.length > 2 && (
-                                        <span className="item-tag">+{order.items.length - 2} ta</span>
-                                    )}
+                                    {order.items?.length > 2 && <span className="item-tag">+{order.items.length - 2} ta</span>}
                                 </div>
                                 
                                 <div className="order-total-preview">

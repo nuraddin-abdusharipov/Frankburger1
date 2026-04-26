@@ -437,3 +437,108 @@
     background: #e74c3c;
     color: white;
 }
+
+/* Status buttons */
+.status-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.status-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.status-btn:hover {
+    transform: translateY(-2px);
+}
+
+.preparing-btn {
+    background: #f39c12;
+    color: white;
+}
+
+.preparing-btn:hover {
+    background: #e67e22;
+}
+
+.delivering-btn {
+    background: #3498db;
+    color: white;
+}
+
+.delivering-btn:hover {
+    background: #2980b9;
+}
+
+.complete-btn {
+    background: #27ae60;
+    color: white;
+}
+
+.complete-btn:hover {
+    background: #219a52;
+}
+
+.completed-message {
+    text-align: center;
+    padding: 12px;
+    background: #e8f5e9;
+    color: #27ae60;
+    border-radius: 30px;
+    font-size: 14px;
+}
+
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    padding: 15px;
+}
+
+.admin-stats .stat-card {
+    background: white;
+    padding: 10px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.admin-stats .stat-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+.admin-stats .stat-label {
+    font-size: 10px;
+    color: #999;
+}
+
+.admin-filters {
+    display: flex;
+    gap: 8px;
+    padding: 0 15px 15px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 12px;
+    border: none;
+    background: rgba(0,0,0,0.1);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.filter-btn.active {
+    background: #e74c3c;
+    color: white;
+}

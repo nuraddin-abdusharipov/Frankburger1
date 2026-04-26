@@ -1,5 +1,5 @@
 import './Orders.css'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
     ordersCollection,
@@ -20,7 +20,7 @@ function Orders() {
 
     const ORDERS_PER_PAGE = 10
 
-    // 🔥 TELEGRAM USER
+    // 🔥 TELEGRAM USER (fallback bilan)
     useEffect(() => {
         const tg = window.Telegram?.WebApp
 
@@ -29,11 +29,14 @@ function Orders() {
             tg.expand()
 
             const user = tg.initDataUnsafe?.user
-            if (user) {
+
+            if (user?.id) {
                 setTelegramId(user.id)
             } else {
-                console.log("User topilmadi")
+                console.log("Telegram user yo‘q")
             }
+        } else {
+            console.log("Telegram yo‘q — test mode")
         }
     }, [])
 
@@ -82,7 +85,7 @@ function Orders() {
             }
 
         } catch (err) {
-            console.error("Xatolik:", err)
+            console.error("🔥 Firebase xatolik:", err)
         }
 
         setLoading(false)
@@ -112,6 +115,12 @@ function Orders() {
         }
     }
 
+    // ❗ Telegram yo‘q bo‘lsa
+    if (!telegramId) {
+        return <p>Telegram orqali kiring...</p>
+    }
+
+    // ⏳ Loading
     if (loading && orders.length === 0) {
         return <p>Yuklanmoqda...</p>
     }
@@ -138,7 +147,11 @@ function Orders() {
                             </div>
 
                             <p>
-                                📅 {new Date(order.createdAt).toLocaleString()}
+                                📅 {
+                                    order.createdAt?.toDate
+                                        ? order.createdAt.toDate().toLocaleString()
+                                        : "Sana yo‘q"
+                                }
                             </p>
 
                             <p>

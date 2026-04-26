@@ -3,6 +3,11 @@
     width: 100%;
     max-width: 400px;
     padding-bottom: 30px;
+    overflow: auto;
+}
+
+::-webkit-scrollbar{
+    display: none;
 }
 
 .orders-header {

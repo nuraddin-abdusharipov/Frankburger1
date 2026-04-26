@@ -1,0 +1,239 @@
+.ProfilePage {
+    height: 90%;
+    overflow: auto;
+    padding-bottom: 30px;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+.profile-header {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.profile-header h1 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.back-btn {
+    text-decoration: none;
+    font-size: 18px;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+}
+
+.profile-content {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.profile-avatar-section {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.avatar {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 15px;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: bold;
+    color: white;
+}
+
+.user-name {
+    margin: 0 0 5px;
+    font-size: 22px;
+    color: white;
+}
+
+.user-username {
+    margin: 0 0 10px;
+    color: #999;
+    font-size: 14px;
+}
+
+.telegram-id {
+    color: #27ae60;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    display: inline-block;
+}
+
+.admin-section {
+    margin-bottom: 25px;
+}
+
+.admin-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #2c3e50, #1a252f);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.admin-btn:hover {
+    background: linear-gradient(135deg, #1a252f, #2c3e50);
+}
+
+.stats-section {
+    border-radius: 20px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.stats-section h3 {
+    margin: 0 0 15px;
+    font-size: 16px;
+    color: white;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 15px;
+}
+
+.stat-icon {
+    font-size: 30px;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-number {
+    font-size: 20px;
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #999;
+}
+
+.info-section {
+    border-radius: 20px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.info-section h3 {
+    margin: 0 0 15px;
+    font-size: 16px;
+    color: white;
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-size: 14px;
+    color: white;
+}
+
+.info-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+}
+
+.my-orders-btn {
+    display: block;
+    text-align: center;
+    padding: 14px;
+    background: #e74c3c;
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.my-orders-btn:hover {
+    background: #c0392b;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.loader {
+    width: 40px;
+    height: 40px;
+    border-top: 3px solid #e74c3c;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

@@ -1,0 +1,186 @@
+.Home {
+    display: flex;
+    width: 100%;
+    height: 90%;
+    align-items: center;
+    justify-content: start;
+    flex-direction: column;
+    max-width: 400px;
+}
+
+.nav {
+    display: flex;
+    width: 100%;
+    height: 10%;
+    align-items: center;
+    justify-content: start;
+}
+
+.nav img {
+    height: 100%;
+}
+
+.bar {
+  display: flex;
+  width: 100%;
+  height: 60px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  gap: 10px;
+  padding: 0 10px;
+
+  cursor: grab;
+
+  scroll-behavior: smooth;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+.bar:active {
+  cursor: grabbing;
+}
+
+.bar::-webkit-scrollbar {
+  display: none;
+}
+
+.bar {
+  scrollbar-width: none;
+}
+
+.main {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.item {
+  flex: none;            
+  height: 65%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: red;
+  color: white;
+
+  padding: 0 15px;
+  border-radius: 10px;
+
+  white-space: nowrap;     
+  font-size: 14px;
+}
+
+.products-container {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+::-webkit-scrollbar{
+    display: none;
+}
+
+.products-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-bottom: 20px;
+}
+
+.product-card {
+    display: flex;
+    background: rgba(0,0,0,0.1);
+    border-radius: 15px;
+    padding: 12px;
+    gap: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.product-img {
+    width: 80px;
+    height: 80px;
+    background: #f0f0f0;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.product-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+}
+
+.price {
+    margin: 0 0 10px 0;
+    font-weight: bold;
+    color: #e74c3c;
+    font-size: 16px;
+}
+
+.add-btn {
+    background: orangered;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    width: fit-content;
+}
+
+.add-btn:hover {
+    background: #c0392b;
+}
+
+.item.active {
+    background: #c0392b;
+    transform: scale(1.05);
+}
+/* Loading indicator */
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #999;
+    font-size: 14px;
+}
+
+/* Smooth scroll */
+.products-container {
+    scroll-behavior: smooth;
+}
+
+/* Lazy loading uchun rasm effekti */
+.product-img img {
+    transition: opacity 0.3s;
+}
+
+.product-img img[loading="lazy"] {
+    opacity: 0;
+}
+
+.product-img img[loading="lazy"].loaded {
+    opacity: 1;
+}

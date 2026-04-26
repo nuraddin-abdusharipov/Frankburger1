@@ -1,0 +1,156 @@
+.CartPage {
+    height: 90%;
+    width: 100%;
+    max-width: 400px;
+    padding-bottom: 20px;
+    overflow: auto;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+.cart-header {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.back-btn {
+    text-decoration: none;
+    font-size: 18px;
+    color: white;
+}
+
+.cart-header h1 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.cart-content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 15px;
+}
+
+.cart-items-list {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+}
+
+.cart-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.item-details {
+    flex: 1;
+}
+
+.item-details h3 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+}
+
+.item-price {
+    margin: 0;
+    font-size: 12px;
+    color: #e74c3c;
+}
+
+.item-quantity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.item-quantity button {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.item-quantity span {
+    min-width: 25px;
+    text-align: center;
+}
+
+.item-total {
+    min-width: 90px;
+    text-align: right;
+    font-weight: bold;
+}
+
+.remove-item {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.cart-summary {
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.summary-row strong {
+    color: #e74c3c;
+}
+
+.checkout-btn {
+    width: 100%;
+    padding: 14px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 60px 20px;
+    border-radius: 15px;
+}
+
+.empty-cart span {
+    font-size: 60px;
+    display: block;
+    margin: 20px 0;
+}
+
+.shop-btn {
+    display: inline-block;
+    padding: 12px 30px;
+    background: #e74c3c;
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+}

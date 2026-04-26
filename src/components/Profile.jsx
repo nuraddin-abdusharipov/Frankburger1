@@ -17,38 +17,34 @@ function Profile() {
 
     // 🔥 Telegram user olish
     useEffect(() => {
-        const tg = window.Telegram?.WebApp
+    const tg = window.Telegram?.WebApp
 
-        if (tg) {
-            tg.expand()
-            tg.ready()
+    if (tg) {
+        tg.expand()
+        tg.ready()
 
-            const tgUser = tg.initDataUnsafe?.user
+        const tgUser = tg.initDataUnsafe?.user
 
-            console.log("TG USER:", tgUser)
+        console.log("TG USER:", tgUser)
 
-            if (tgUser) {
-                const mappedUser = {
-                    id: tgUser.id,
-                    firstName: tgUser.first_name,
-                    lastName: tgUser.last_name,
-                    username: tgUser.username,
-                    photoUrl: tgUser.photo_url,
-                    languageCode: tgUser.language_code
-                }
-
-                setUser(mappedUser)
-                setTelegramId(tgUser.id)
-                setIsAdmin(ADMIN_IDS.includes(tgUser.id))
-            } else {
-                console.log("Telegram user topilmadi")
+        if (tgUser) {
+            const mappedUser = {
+                id: tgUser.id,
+                firstName: tgUser.first_name,
+                lastName: tgUser.last_name,
+                username: tgUser.username,
+                photoUrl: tgUser.photo_url,
+                languageCode: tgUser.language_code
             }
-        } else {
-            console.log("Telegram WebApp mavjud emas")
-        }
 
-        setLoading(false)
-    }, [])
+            setUser(mappedUser)
+            setTelegramId(tgUser.id)
+            setIsAdmin(ADMIN_IDS.includes(tgUser.id))
+        }
+    }
+
+    setTimeout(() => setLoading(false), 500) // 🔥 delay
+}, [])
 
     // 🔥 Statistika olish
     useEffect(() => {

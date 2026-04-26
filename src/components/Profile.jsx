@@ -30,6 +30,7 @@ function Profile() {
         } else {
             console.log("telegramda ochilamagan")
         }
+        setLoading(false)
     }, [])
 
     useEffect(() => {

@@ -2,6 +2,7 @@ import './Profile.css'
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { db, ordersCollection, getDocs, query, where } from '../firebase'
+import { getTelegramUser, expandTelegramApp, showTelegramAlert } from '../utils/telegram'
 
 function Profile() {
     const navigate = useNavigate()
@@ -12,79 +13,59 @@ function Profile() {
     const [totalSpent, setTotalSpent] = useState(0)
     const [loading, setLoading] = useState(true)
 
-    const ADMIN_IDS = [7164122768, 123456789] 
+    const ADMIN_IDS = [7164122768, 7787131118]
 
     useEffect(() => {
-        if (window.Telegram && window.Telegram.WebApp) {
-            const webApp = window.Telegram.WebApp;
-            const initData = webApp.initDataUnsafe;
-            
-            if (initData && initData.user) {
-                const userData = initData.user;
-                setTelegramId(userData.id);
-                setUser({
-                    id: userData.id,
-                    firstName: userData.first_name,
-                    lastName: userData.last_name || '',
-                    username: userData.username || '',
-                    photoUrl: userData.photo_url || null,
-                    languageCode: userData.language_code || 'uz'
-                });
-                
-                setIsAdmin(ADMIN_IDS.includes(userData.id));
-            }
-            webApp.expand();
+        // Telegram WebApp ni to'liq ochish
+        expandTelegramApp()
+        
+        // Foydalanuvchi ma'lumotlarini olish
+        const tgUser = getTelegramUser()
+        
+        if (tgUser) {
+            setTelegramId(tgUser.id)
+            setUser(tgUser)
+            setIsAdmin(ADMIN_IDS.includes(tgUser.id))
+            setLoading(false)
         } else {
-            const testId = parseInt(localStorage.getItem('test_tg_id') || '7164122768');
-            setTelegramId(testId);
-            setUser({
-                id: testId,
-                firstName: 'Test',
-                lastName: 'User',
-                username: 'test_user',
-                photoUrl: null,
-                languageCode: 'uz'
-            });
-            setIsAdmin(ADMIN_IDS.includes(testId));
+            console.log("telegramda ochilamagan")
         }
-    }, []);
+    }, [])
 
     useEffect(() => {
-        if (telegramId) {
-            fetchUserStats();
+        if (telegramId && !loading) {
+            fetchUserStats()
         }
-    }, [telegramId]);
+    }, [telegramId, loading])
 
     const fetchUserStats = async () => {
         try {
             const q = query(
                 ordersCollection,
                 where("telegramId", "==", telegramId)
-            );
-            const querySnapshot = await getDocs(q);
-            const orders = querySnapshot.docs.map(doc => doc.data());
+            )
+            const snapshot = await getDocs(q)
+            const orders = snapshot.docs.map(doc => doc.data())
             
-            setOrdersCount(orders.length);
-            const total = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-            setTotalSpent(total);
+            setOrdersCount(orders.length)
+            const total = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0)
+            setTotalSpent(total)
         } catch (error) {
-            console.error('Statistika xatosi:', error);
-        } finally {
-            setLoading(false);
+            console.error('Statistika xatosi:', error)
         }
-    };
+    }
 
     const goToAdminPanel = () => {
-        navigate('/admin');
-    };
+        navigate('/admin')
+    }
 
     const formatDate = () => {
         return new Date().toLocaleDateString('uz-UZ', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
-        });
-    };
+        })
+    }
 
     if (loading) {
         return (
@@ -94,7 +75,7 @@ function Profile() {
                     <p>Yuklanmoqda...</p>
                 </div>
             </div>
-        );
+        )
     }
 
     return (
@@ -189,7 +170,7 @@ function Profile() {
                 </Link>
             </div>
         </div>
-    );
+    )
 }
 
 export default Profile

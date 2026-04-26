@@ -2,12 +2,14 @@ import './Checkout.css'
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { db, ordersCollection, addDoc } from '../firebase'
+import { getTelegramUser, expandTelegramApp, showTelegramAlert, hapticFeedback } from '../utils/telegram'
 
 function Checkout() {
     const navigate = useNavigate()
     const [cart, setCart] = useState([])
     const [loading, setLoading] = useState(false)
     const [telegramId, setTelegramId] = useState(null)
+    const [userName, setUserName] = useState('')
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -19,34 +21,39 @@ function Checkout() {
     const [selectedLocation, setSelectedLocation] = useState(null)
     const [mapLoaded, setMapLoaded] = useState(false)
 
-    // ✅ O'ZINGIZNING BOT TOKEN VA CHAT ID NI QO'YING
-    // BotFather dan token oling: https://t.me/BotFather
-    // Chat ID olish uchun: @userinfobot ga yozing
-    const TELEGRAM_BOT_TOKEN = "8687476340:AAH7A4hueNbqM49ksxSlYMHj9DY3TgQtITA"  // Tokeningizni shu yerga yozing
-    const TELEGRAM_CHAT_ID = "7787131118"  // Chat ID ni shu yerga yozing
+    // Telegram bot sozlamalari
+    const TELEGRAM_BOT_TOKEN = "8687476340:AAH7A4hueNbqM49ksxSlYMHj9DY3TgQtITA"
+    const ADMIN_CHAT_ID = "7787131118"  // Admin chat ID (xabar shu yerga keladi)
 
-    // Telegram ID olish
+    // REAL Telegram ma'lumotlarini olish
     useEffect(() => {
-        if (window.Telegram && window.Telegram.WebApp) {
-            const webApp = window.Telegram.WebApp;
-            const initData = webApp.initDataUnsafe;
-            
-            if (initData && initData.user) {
-                const user = initData.user;
-                setTelegramId(user.id);
-                
-                if (user.first_name) {
-                    setFormData(prev => ({
-                        ...prev,
-                        firstName: user.first_name,
-                        lastName: user.last_name || ''
-                    }));
-                }
-            }
-            webApp.expand();
+        expandTelegramApp()
+        const tgUser = getTelegramUser()
+        
+        if (tgUser && tgUser.id) {
+            // REAL foydalanuvchi ma'lumotlari
+            setTelegramId(tgUser.id)
+            setUserName(tgUser.firstName)
+            setFormData(prev => ({
+                ...prev,
+                firstName: tgUser.firstName,
+                lastName: tgUser.lastName
+            }))
         } else {
-            const testId = localStorage.getItem('test_tg_id');
-            setTelegramId(testId ? parseInt(testId) : 7164122768);
+            // TEST REJIMI (faqat Telegram bo'lmagan muhitda)
+            const urlParams = new URLSearchParams(window.location.search)
+            const testId = urlParams.get('tg_id')
+            if (testId) {
+                setTelegramId(parseInt(testId))
+                setUserName('Test')
+                setFormData(prev => ({
+                    ...prev,
+                    firstName: 'Test',
+                    lastName: 'User'
+                }))
+            } else {
+                console.log('Telegram maʼlumotlari olinmadi')
+            }
         }
     }, [])
 
@@ -74,9 +81,9 @@ function Checkout() {
     }, [])
 
     useEffect(() => {
-        if (mapLoaded && !selectedLocation) {
-            const map = L.map('map').setView([41.2995, 69.2401], 13)
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        if (mapLoaded && !selectedLocation && window.L) {
+            const map = window.L.map('map').setView([41.2995, 69.2401], 13)
+            window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap'
             }).addTo(map)
 
@@ -86,7 +93,7 @@ function Checkout() {
                 if (marker) {
                     marker.remove()
                 }
-                marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map)
+                marker = window.L.marker([e.latlng.lat, e.latlng.lng]).addTo(map)
                 setSelectedLocation({
                     lat: e.latlng.lat,
                     lng: e.latlng.lng
@@ -95,6 +102,7 @@ function Checkout() {
                     ...prev,
                     address: `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`
                 }))
+                hapticFeedback()
             })
 
             return () => map.remove()
@@ -110,9 +118,8 @@ function Checkout() {
 
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
-    // Telegram botga xabar yuborish (to'g'rilangan)
-    const sendToTelegram = async (orderData) => {
-        // Xabar matnini tayyorlash
+    // 1. ADMIN GA XABAR YUBORISH
+    const sendToAdmin = async (orderData) => {
         let message = `🆕 YANGI ZAKAZ! 🆕\n\n`
         message += `🤖 Telegram ID: ${orderData.telegramId}\n`
         message += `👤 Mijoz: ${orderData.customer.fullName}\n`
@@ -132,35 +139,60 @@ function Checkout() {
 
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
         
-        console.log('Telegramga yuborilmoqda...')
-        console.log('URL:', url)
-        console.log('Chat ID:', TELEGRAM_CHAT_ID)
-        
         try {
             const response = await fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    chat_id: TELEGRAM_CHAT_ID,
+                    chat_id: ADMIN_CHAT_ID,
                     text: message,
                     parse_mode: 'HTML'
                 })
             })
-            
             const result = await response.json()
-            console.log('Telegram javobi:', result)
-            
             if (result.ok) {
-                console.log('✅ Telegramga muvaffaqiyatli yuborildi!')
+                console.log('✅ Adminga xabar yuborildi')
                 return true
-            } else {
-                console.log('❌ Telegram xatosi:', result.description)
-                return false
             }
+            return false
         } catch (error) {
-            console.error('❌ Telegram yuborishda xatolik:', error)
+            console.error('Admin xabari yuborishda xatolik:', error)
+            return false
+        }
+    }
+
+    // 2. USERGA XABAR YUBORISH (zakaz qabul qilingani haqida)
+    const sendToUser = async (orderData) => {
+        let message = `🍔 FRANK BURGER 🍔\n\n`
+        message += `✅ Sizning zakazingiz qabul qilindi!\n\n`
+        message += `🆔 Zakaz ID: ${orderData.orderId}\n`
+        message += `💰 Jami: ${orderData.totalAmount.toLocaleString()} so'm\n`
+        message += `⏰ Yetkazib berish: ${orderData.delivery.deliveryTime}\n`
+        message += `📍 Manzil: ${orderData.delivery.address}\n\n`
+        message += `📦 Zakaz holatini "Buyurtmalar" bo'limidan kuzatishingiz mumkin.\n\n`
+        message += `☎️ Savollar uchun: +998 XX XXX XX XX`
+
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: orderData.telegramId,  // Foydalanuvchining Telegram ID si
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            })
+            const result = await response.json()
+            if (result.ok) {
+                console.log('✅ Foydalanuvchiga xabar yuborildi')
+                return true
+            }
+            console.log('Foydalanuvchi xatosi:', result.description)
+            return false
+        } catch (error) {
+            console.error('Foydalanuvchi xabari yuborishda xatolik:', error)
             return false
         }
     }
@@ -168,12 +200,12 @@ function Checkout() {
     // Firebase ga saqlash
     const saveToFirebase = async (orderData) => {
         try {
-            const docRef = await addDoc(ordersCollection, orderData);
-            console.log('✅ Firebase ga saqlandi! ID:', docRef.id);
-            return docRef.id;
+            const docRef = await addDoc(ordersCollection, orderData)
+            console.log('✅ Firebase ga saqlandi! ID:', docRef.id)
+            return true
         } catch (error) {
-            console.error('Firebase xatosi:', error);
-            return null;
+            console.error('Firebase xatosi:', error)
+            return false
         }
     }
 
@@ -181,11 +213,22 @@ function Checkout() {
         e.preventDefault()
         
         if (!selectedLocation) {
-            alert("❌ Iltimos, xaritadan manzilingizni belgilang!")
+            showTelegramAlert("❌ Iltimos, xaritadan manzilingizni belgilang!")
+            return
+        }
+        
+        if (!formData.deliveryTime) {
+            showTelegramAlert("❌ Iltimos, yetkazib berish vaqtini tanlang!")
+            return
+        }
+        
+        if (!formData.phone) {
+            showTelegramAlert("❌ Iltimos, telefon raqamingizni kiriting!")
             return
         }
         
         setLoading(true)
+        hapticFeedback()
         
         const orderData = {
             telegramId: telegramId,
@@ -215,34 +258,26 @@ function Checkout() {
             createdAt: new Date().toISOString()
         }
 
-        console.log('Zakaz ma\'lumotlari:', orderData)
-
         // 1. Firebase ga saqlash
-        const firebaseId = await saveToFirebase(orderData)
+        await saveToFirebase(orderData)
         
-        // 2. Telegram botga xabar (xatolik bo'lsa ham zakaz qabul qilinadi)
-        const telegramSent = await sendToTelegram(orderData)
+        // 2. Admin ga xabar yuborish
+        await sendToAdmin(orderData)
         
-        // 3. LocalStorage dan savatni tozalash
+        // 3. Foydalanuvchiga xabar yuborish (zakaz qabul qilingani haqida)
+        await sendToUser(orderData)
+        
+        // 4. LocalStorage dan savatni tozalash
         localStorage.removeItem('cart')
         
         setLoading(false)
         
-        // 4. Xabar
-        let alertMessage = "✅ Zakaz qabul qilindi!\n\n"
-        if (telegramSent) {
-            alertMessage += "📨 Adminga xabar yuborildi!"
-        } else {
-            alertMessage += "⚠️ Xabar yuborilmadi, lekin zakaz qabul qilindi!"
-        }
+        // 5. Telegram da xabar ko'rsatish
+        const successMessage = `✅ Zakaz qabul qilindi!\n\n🆔 Zakaz ID: ${orderData.orderId}\n💰 Summa: ${totalPrice.toLocaleString()} so'm\n⏰ Yetkazib berish: ${formData.deliveryTime}\n\n📋 Zakaz holatini "Buyurtmalar" bo'limidan kuzatishingiz mumkin.`
         
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.showAlert(alertMessage);
-        } else {
-            alert(alertMessage);
-        }
+        showTelegramAlert(successMessage)
         
-        // 5. Bosh sahifaga qaytish
+        // 6. Bosh sahifaga qaytish
         navigate('/')
     }
 

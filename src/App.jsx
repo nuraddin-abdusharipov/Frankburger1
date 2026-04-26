@@ -11,19 +11,24 @@ import Admin from './components/Admin'
 import Profile from './components/Profile'
 
 function App() {
-
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    window.addEventListener("load", () => {
+    // Telegram WebApp ni to'liq yuklash
+    const script = document.createElement('script')
+    script.src = 'https://telegram.org/js/telegram-web-app.js'
+    script.onload = () => {
       setLoading(false)
-    })
+    }
+    document.head.appendChild(script)
+
+    return () => {
+      if (script.parentNode) document.head.removeChild(script)
+    }
   }, [])
 
   if (loading) {
-    return (
-      <Loading />
-    )
+    return <Loading />
   }
 
   return (

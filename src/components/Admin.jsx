@@ -2,6 +2,7 @@ import './Admin.css'
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { db, ordersCollection, getDocs, getDoc, updateDoc, doc, orderBy, query } from '../firebase'
+import { showTelegramAlert, hapticFeedback } from '../utils/telegram'
 
 function Admin() {
     const navigate = useNavigate()
@@ -16,7 +17,8 @@ function Admin() {
     const mapRef = useRef(null)
     const mapInstanceRef = useRef(null)
 
-    const ADMIN_IDS = [7164122768, 123456789]
+    const ADMIN_IDS = [7164122768, 7787131118]
+    const TELEGRAM_BOT_TOKEN = "8687476340:AAH7A4hueNbqM49ksxSlYMHj9DY3TgQtITA"
 
     // Leaflet ni CDN dan yuklash
     useEffect(() => {
@@ -49,15 +51,13 @@ function Admin() {
                 setIsAdmin(ADMIN_IDS.includes(userId));
                 
                 if (!ADMIN_IDS.includes(userId)) {
-                    alert("❌ Siz admin emassiz!");
+                    showTelegramAlert("❌ Siz admin emassiz!");
                     navigate('/');
                 }
             }
             webApp.expand();
         } else {
-            const testId = parseInt(localStorage.getItem('test_tg_id') || '7164122768');
-            setTelegramId(testId);
-            setIsAdmin(ADMIN_IDS.includes(testId));
+            console.log("Telegram WebApp ochilmagan yoki Telegram API mavjud emas.");
         }
     }, [navigate]);
 
@@ -130,7 +130,7 @@ function Admin() {
             if (orderSnap.exists()) {
                 setSelectedOrder({ id: orderSnap.id, ...orderSnap.data() });
             } else {
-                alert('Zakaz topilmadi!');
+                showTelegramAlert('Zakaz topilmadi!');
                 navigate('/admin');
             }
         } catch (error) {
@@ -139,7 +139,67 @@ function Admin() {
         }
     };
 
-    const updateOrderStatus = async (orderId, newStatus) => {
+    // Statusga qarab foydalanuvchiga xabar yuborish
+    const sendStatusMessageToUser = async (orderData, newStatus) => {
+        let message = `🍔 FRANK BURGER 🍔\n\n`
+        message += `🆔 Zakaz ID: ${orderData.orderId}\n`
+        message += `💰 Jami: ${orderData.totalAmount.toLocaleString()} so'm\n\n`
+        
+        switch(newStatus) {
+            case 'Tayyorlanmoqda':
+                message += `👨‍🍳 Sizning zakazingiz TAYYORLANMOQDA!\n\n`
+                message += `🔧 Oshpazlar buyurtmangizni tayyorlashga kirishdi.\n`
+                message += `⏱️ Tez orada yetkazib berish xizmatiga topshiriladi.\n\n`
+                message += `📦 Holati: Tayyorlanmoqda 🔧`
+                break
+                
+            case 'Yetkazilmoqda':
+                message += `🛵 Sizning zakazingiz YETKAZILMOQDA!\n\n`
+                message += `🚚 Buyurtmangiz yo'lda! Tez orada sizga yetib boradi.\n`
+                message += `📍 Yetkazib beruvchi manzilingizga yo'l oldi.\n\n`
+                message += `📦 Holati: Yetkazilmoqda 🚚`
+                break
+                
+            case 'Bajarilgan':
+                message += `✅ Sizning zakazingiz BAJARILDI!\n\n`
+                message += `🎉 Buyurtmangiz muvaffaqiyatli yakunlandi!\n`
+                message += `⭐ Bizni tanlaganingiz uchun rahmat!\n`
+                message += `🍽️ Yana xush kelibsiz!\n\n`
+                message += `📦 Holati: Bajarilgan ✅`
+                break
+                
+            default:
+                return false
+        }
+        
+        message += `\n\n☎️ Savollar uchun: +998 XX XXX XX XX`
+
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: orderData.telegramId,
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            })
+            const result = await response.json()
+            if (result.ok) {
+                console.log(`✅ Foydalanuvchiga "${newStatus}" xabari yuborildi`)
+                return true
+            }
+            console.log('Foydalanuvchi xatosi:', result.description)
+            return false
+        } catch (error) {
+            console.error('Xabar yuborishda xatolik:', error)
+            return false
+        }
+    }
+
+    const updateOrderStatus = async (orderId, newStatus, orderData) => {
         try {
             const orderRef = doc(db, 'orders', orderId);
             await updateDoc(orderRef, { status: newStatus });
@@ -152,10 +212,27 @@ function Admin() {
                 setSelectedOrder(prev => ({ ...prev, status: newStatus }));
             }
             
-            alert(`✅ Zakaz statusi "${newStatus}" ga o'zgartirildi!`);
+            // Statusga qarab foydalanuvchiga xabar yuborish
+            const userMessageSent = await sendStatusMessageToUser(orderData || selectedOrder, newStatus)
+            
+            let statusText = ''
+            switch(newStatus) {
+                case 'Tayyorlanmoqda': statusText = 'Tayyorlanmoqda 🔧'; break
+                case 'Yetkazilmoqda': statusText = 'Yetkazilmoqda 🚚'; break
+                case 'Bajarilgan': statusText = 'Bajarilgan ✅'; break
+                default: statusText = newStatus
+            }
+            
+            if (userMessageSent) {
+                showTelegramAlert(`✅ Zakaz statusi "${statusText}" ga o'zgartirildi va foydalanuvchiga xabar yuborildi!`)
+            } else {
+                showTelegramAlert(`✅ Zakaz statusi "${statusText}" ga o'zgartirildi! (Foydalanuvchiga xabar yuborilmadi)`)
+            }
+            
+            hapticFeedback()
         } catch (error) {
             console.error('Status yangilash xatosi:', error);
-            alert('❌ Xatolik yuz berdi!');
+            showTelegramAlert('❌ Xatolik yuz berdi!');
         }
     };
 
@@ -166,6 +243,12 @@ function Admin() {
     const getFilteredOrders = () => {
         if (filter === 'new') {
             return orders.filter(o => o.status === 'Yangi');
+        }
+        if (filter === 'preparing') {
+            return orders.filter(o => o.status === 'Tayyorlanmoqda');
+        }
+        if (filter === 'delivering') {
+            return orders.filter(o => o.status === 'Yetkazilmoqda');
         }
         if (filter === 'completed') {
             return orders.filter(o => o.status === 'Bajarilgan');
@@ -285,20 +368,40 @@ function Admin() {
                                 {getStatusText(selectedOrder.status)}
                             </div>
                             
-                            {selectedOrder.status !== 'Bajarilgan' && (
-                                <button 
-                                    className="complete-btn"
-                                    onClick={() => updateOrderStatus(selectedOrder.id, 'Bajarilgan')}
-                                >
-                                    ✅ Zakazni bajarilgan deb belgilash
-                                </button>
-                            )}
-                            
-                            {selectedOrder.status === 'Bajarilgan' && (
-                                <div className="completed-message">
-                                    ✅ Bu zakaz bajarilgan
-                                </div>
-                            )}
+                            <div className="status-buttons">
+                                {selectedOrder.status !== 'Tayyorlanmoqda' && selectedOrder.status !== 'Yetkazilmoqda' && selectedOrder.status !== 'Bajarilgan' && (
+                                    <button 
+                                        className="status-btn preparing-btn"
+                                        onClick={() => updateOrderStatus(selectedOrder.id, 'Tayyorlanmoqda', selectedOrder)}
+                                    >
+                                        🔧 Tayyorlanmoqda
+                                    </button>
+                                )}
+                                
+                                {selectedOrder.status === 'Tayyorlanmoqda' && (
+                                    <button 
+                                        className="status-btn delivering-btn"
+                                        onClick={() => updateOrderStatus(selectedOrder.id, 'Yetkazilmoqda', selectedOrder)}
+                                    >
+                                        🚚 Yetkazilmoqda
+                                    </button>
+                                )}
+                                
+                                {selectedOrder.status === 'Yetkazilmoqda' && (
+                                    <button 
+                                        className="status-btn complete-btn"
+                                        onClick={() => updateOrderStatus(selectedOrder.id, 'Bajarilgan', selectedOrder)}
+                                    >
+                                        ✅ Bajarilgan
+                                    </button>
+                                )}
+                                
+                                {selectedOrder.status === 'Bajarilgan' && (
+                                    <div className="completed-message">
+                                        ✅ Bu zakaz bajarilgan
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -311,6 +414,8 @@ function Admin() {
     const stats = {
         total: orders.length,
         new: orders.filter(o => o.status === 'Yangi').length,
+        preparing: orders.filter(o => o.status === 'Tayyorlanmoqda').length,
+        delivering: orders.filter(o => o.status === 'Yetkazilmoqda').length,
         completed: orders.filter(o => o.status === 'Bajarilgan').length
     };
 
@@ -329,7 +434,15 @@ function Admin() {
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{stats.new}</div>
-                    <div className="stat-label">Yangi zakazlar</div>
+                    <div className="stat-label">Yangi</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-value">{stats.preparing}</div>
+                    <div className="stat-label">Tayyorlanmoqda</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-value">{stats.delivering}</div>
+                    <div className="stat-label">Yetkazilmoqda</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{stats.completed}</div>
@@ -338,24 +451,11 @@ function Admin() {
             </div>
 
             <div className="admin-filters">
-                <button 
-                    className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-                    onClick={() => setFilter('all')}
-                >
-                    Hammasi
-                </button>
-                <button 
-                    className={`filter-btn ${filter === 'new' ? 'active' : ''}`}
-                    onClick={() => setFilter('new')}
-                >
-                    🆕 Yangi
-                </button>
-                <button 
-                    className={`filter-btn ${filter === 'completed' ? 'active' : ''}`}
-                    onClick={() => setFilter('completed')}
-                >
-                    ✅ Bajarilgan
-                </button>
+                <button className={`filter-btn ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>Hammasi</button>
+                <button className={`filter-btn ${filter === 'new' ? 'active' : ''}`} onClick={() => setFilter('new')}>🆕 Yangi</button>
+                <button className={`filter-btn ${filter === 'preparing' ? 'active' : ''}`} onClick={() => setFilter('preparing')}>🔧 Tayyorlanmoqda</button>
+                <button className={`filter-btn ${filter === 'delivering' ? 'active' : ''}`} onClick={() => setFilter('delivering')}>🚚 Yetkazilmoqda</button>
+                <button className={`filter-btn ${filter === 'completed' ? 'active' : ''}`} onClick={() => setFilter('completed')}>✅ Bajarilgan</button>
             </div>
 
             <div className="admin-orders">
@@ -373,9 +473,7 @@ function Admin() {
                             <div className="order-header">
                                 <div>
                                     <strong>Zakaz #{order.orderId}</strong>
-                                    <p className="order-date">
-                                        📅 {new Date(order.orderDate).toLocaleString()}
-                                    </p>
+                                    <p className="order-date">📅 {new Date(order.orderDate).toLocaleString()}</p>
                                     <p className="order-telegram">🤖 TG ID: {order.telegramId}</p>
                                 </div>
                                 <div className={`order-status-badge ${getStatusColor(order.status)}`}>
@@ -393,13 +491,9 @@ function Admin() {
                                 
                                 <div className="order-items-preview">
                                     {order.items?.slice(0, 2).map((item, idx) => (
-                                        <span key={idx} className="item-tag">
-                                            {item.name} x{item.quantity}
-                                        </span>
+                                        <span key={idx} className="item-tag">{item.name} x{item.quantity}</span>
                                     ))}
-                                    {order.items?.length > 2 && (
-                                        <span className="item-tag">+{order.items.length - 2} ta</span>
-                                    )}
+                                    {order.items?.length > 2 && <span className="item-tag">+{order.items.length - 2} ta</span>}
                                 </div>
                                 
                                 <div className="order-total-preview">

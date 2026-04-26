@@ -49,8 +49,7 @@ function Orders() {
             }
             webApp.expand();
         } else {
-            const testId = localStorage.getItem('test_tg_id');
-            setTelegramId(testId ? parseInt(testId) : 7164122768);
+            console.log("Telegram WebApp ochilmagan yoki Telegram API mavjud emas.");
         }
     }, [])
 

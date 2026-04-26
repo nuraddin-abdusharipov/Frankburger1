@@ -14,22 +14,15 @@ function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Telegram WebApp ni to'liq yuklash
-    const script = document.createElement('script')
-    script.src = 'https://telegram.org/js/telegram-web-app.js'
-    script.onload = () => {
-      setLoading(false)
-    }
-    document.head.appendChild(script)
+  const tg = window.Telegram?.WebApp
 
-    return () => {
-      if (script.parentNode) document.head.removeChild(script)
-    }
-  }, [])
-
-  if (loading) {
-    return <Loading />
+  if (tg) {
+    tg.expand()
+    tg.ready()
   }
+
+  setLoading(false)
+}, [])
 
   return (
     <div className="App">

@@ -53,7 +53,7 @@ function Footer() {
           color: isActive ? "orangered" : "white"
         })}
       >
-        <i class="fa-solid fa-list"></i> Buyurtmalar
+        <i class="fa-solid fa-list"></i> Buyurtma
       </NavLink>
 
       <NavLink

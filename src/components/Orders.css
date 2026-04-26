@@ -1,11 +1,11 @@
 /* 🔥 PAGE */
 .OrdersPage {
-    height: 100vh;
-    max-width: 420px;
+    height: 90%;
+    max-width: 400px;
+    width: 100%;
     margin: 0 auto;
     overflow-y: auto;
     padding-bottom: 80px;
-    background: #f5f7fb;
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -19,7 +19,6 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background: white;
     padding: 15px;
     border-bottom: 1px solid #eee;
 

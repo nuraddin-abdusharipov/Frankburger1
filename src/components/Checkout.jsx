@@ -27,35 +27,19 @@ function Checkout() {
 
     // REAL Telegram ma'lumotlarini olish
     useEffect(() => {
-        expandTelegramApp()
-        const tgUser = getTelegramUser()
-        
-        if (tgUser && tgUser.id) {
-            // REAL foydalanuvchi ma'lumotlari
-            setTelegramId(tgUser.id)
-            setUserName(tgUser.firstName)
-            setFormData(prev => ({
-                ...prev,
-                firstName: tgUser.firstName,
-                lastName: tgUser.lastName
-            }))
-        } else {
-            // TEST REJIMI (faqat Telegram bo'lmagan muhitda)
-            const urlParams = new URLSearchParams(window.location.search)
-            const testId = urlParams.get('tg_id')
-            if (testId) {
-                setTelegramId(parseInt(testId))
-                setUserName('Test')
-                setFormData(prev => ({
-                    ...prev,
-                    firstName: 'Test',
-                    lastName: 'User'
-                }))
-            } else {
-                console.log('Telegram maʼlumotlari olinmadi')
-            }
-        }
-    }, [])
+    expandTelegramApp()
+    const tgUser = getTelegramUser()
+    
+    if (tgUser && tgUser.id) {
+        setTelegramId(tgUser.id)
+        setUserName(tgUser.firstName)
+        setFormData(prev => ({
+            ...prev,
+            firstName: tgUser.firstName,
+            lastName: tgUser.lastName
+        }))
+    }
+}, [])
 
     // Savatni yuklash
     useEffect(() => {

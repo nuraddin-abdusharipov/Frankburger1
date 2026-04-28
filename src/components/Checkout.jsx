@@ -1,7 +1,7 @@
 import './Checkout.css'
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { db, ordersCollection, addDoc } from '../firebase'
+import { db, ordersCollection, Timestamp, addDoc } from '../firebase'
 import { getTelegramUser, expandTelegramApp, showTelegramAlert, hapticFeedback } from '../utils/telegram'
 
 function Checkout() {
@@ -215,7 +215,7 @@ function Checkout() {
         hapticFeedback()
         
         const orderData = {
-            telegramId: telegramId,
+            telegramId: Number(telegramId),
             orderId: Date.now(),
             orderDate: new Date().toISOString(),
             customer: {
@@ -239,7 +239,7 @@ function Checkout() {
             })),
             totalAmount: totalPrice,
             status: "Yangi",
-            createdAt: new Date().toISOString()
+            createdAt: Timestamp.now()
         }
 
         // 1. Firebase ga saqlash

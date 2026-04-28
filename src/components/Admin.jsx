@@ -18,7 +18,7 @@ function Admin() {
     const mapInstanceRef = useRef(null)
 
     const ADMIN_IDS = [7164122768, 7787131118]
-    const TELEGRAM_BOT_TOKEN = "8771407234:AAFlVx8y1S7lrI8Zz0yThThR2JW0iMkDtwc"
+    const TELEGRAM_BOT_TOKEN = "8771407234:AAGculoSuCYdIhsG1uzgCKTY37HP608uXzo"
 
     // Leaflet ni CDN dan yuklash
     useEffect(() => {

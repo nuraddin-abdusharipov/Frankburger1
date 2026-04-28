@@ -22,7 +22,7 @@ function Checkout() {
     const [mapLoaded, setMapLoaded] = useState(false)
 
     // Telegram bot sozlamalari
-    const TELEGRAM_BOT_TOKEN = "8771407234:AAFlVx8y1S7lrI8Zz0yThThR2JW0iMkDtwc"
+    const TELEGRAM_BOT_TOKEN = "8771407234:AAGculoSuCYdIhsG1uzgCKTY37HP608uXzo"
     const ADMIN_CHAT_ID = "7787131118"  // Admin chat ID (xabar shu yerga keladi)
 
     // REAL Telegram ma'lumotlarini olish

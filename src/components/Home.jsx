@@ -27,26 +27,37 @@ function Home() {
         localStorage.setItem('cart', JSON.stringify(cart))
     }, [cart])
 
-    const categories = ["Barchasi", "Burger", "Pizza", "Hot Dog", "Drink", "Combo", "Dessert"]
+    const categories = ["Barchasi", "Burger", "Pizza", "Hot Dog", "Ichimlik"]
 
     const allProductsList = [
-        { id: 1, name: "Classic Burger", price: 25000, img: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?w=200&h=200&fit=crop", category: "Burger" },
-        { id: 2, name: "Cheese Burger", price: 28000, img: "https://images.pexels.com/photos/1639559/pexels-photo-1639559.jpeg?w=200&h=200&fit=crop", category: "Burger" },
-        { id: 3, name: "Double Burger", price: 35000, img: "https://images.pexels.com/photos/2983098/pexels-photo-2983098.jpeg?w=200&h=200&fit=crop", category: "Burger" },
-        { id: 4, name: "Chicken Burger", price: 27000, img: "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg?w=200&h=200&fit=crop", category: "Burger" },
-        { id: 5, name: "Margherita", price: 32000, img: "https://images.pexels.com/photos/2147491/pexels-photo-2147491.jpeg?w=200&h=200&fit=crop", category: "Pizza" },
-        { id: 6, name: "Pepperoni", price: 38000, img: "https://images.pexels.com/photos/1146760/pexels-photo-1146760.jpeg?w=200&h=200&fit=crop", category: "Pizza" },
-        { id: 7, name: "Hawaiian", price: 35000, img: "https://images.pexels.com/photos/1453690/pexels-photo-1453690.jpeg?w=200&h=200&fit=crop", category: "Pizza" },
-        { id: 8, name: "Classic Hot Dog", price: 15000, img: "https://images.pexels.com/photos/1351239/pexels-photo-1351239.jpeg?w=200&h=200&fit=crop", category: "Hot Dog" },
-        { id: 9, name: "Cheese Hot Dog", price: 18000, img: "https://images.pexels.com/photos/1757974/pexels-photo-1757974.jpeg?w=200&h=200&fit=crop", category: "Hot Dog" },
-        { id: 10, name: "Coca Cola", price: 5000, img: "https://images.pexels.com/photos/50593/coca-cola-coke-soft-drink-coke-bottle-50593.jpeg?w=200&h=200&fit=crop", category: "Drink" },
-        { id: 11, name: "Fanta", price: 5000, img: "https://images.pexels.com/photos/1556683/pexels-photo-1556683.jpeg?w=200&h=200&fit=crop", category: "Drink" },
-        { id: 12, name: "Pepsi", price: 5000, img: "https://images.pexels.com/photos/1132537/pexels-photo-1132537.jpeg?w=200&h=200&fit=crop", category: "Drink" },
-        { id: 13, name: "Water", price: 3000, img: "https://images.pexels.com/photos/327090/pexels-photo-327090.jpeg?w=200&h=200&fit=crop", category: "Drink" },
-        { id: 14, name: "Burger + Cola", price: 28000, img: "https://images.pexels.com/photos/2602109/pexels-photo-2602109.jpeg?w=200&h=200&fit=crop", category: "Combo" },
-        { id: 15, name: "Pizza + Cola", price: 35000, img: "https://images.pexels.com/photos/2990569/pexels-photo-2990569.jpeg?w=200&h=200&fit=crop", category: "Combo" },
-        { id: 16, name: "Ice Cream", price: 8000, img: "https://images.pexels.com/photos/209040/pexels-photo-209040.jpeg?w=200&h=200&fit=crop", category: "Dessert" },
-        { id: 17, name: "Brownie", price: 12000, img: "https://images.pexels.com/photos/2067421/pexels-photo-2067421.jpeg?w=200&h=200&fit=crop", category: "Dessert" }
+        { id: 1, name: "Frank Burger", price: 55000, img: "https://d3af5evjz6cdzs.cloudfront.net/images/uploads/800x0/_92f500a1ab64dba500d217959650e0fd1704267708.jpg", category: "Burger" },
+        { id: 2, name: "Big Burger", price: 45000, img: "https://www.osieurope.com/wp-content/uploads/2022/05/My-project-1.jpg", category: "Burger" },
+        { id: 3, name: "Oddiy Burger", price: 35000, img: "https://www.eatingwell.com/thmb/UY5N-tQKYgA91XJBwiolc_1nbJ0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/3757723-7c4020ccc47240138323b9bc5b730e8d.jpg", category: "Burger" },
+
+        { id: 4, name: "Katta Bola Pitsa 1", price: 75000, img: "https://cdn.foodpicasso.com/assets/0e/20/22/12/0e20221284bc94fd51a34540fb55b03c---png_1000x_103c0_convert.png", category: "Pizza" },
+        { id: 5, name: "Katta Bola Pitsa 2", price: 90000, img: "https://cdn.foodpicasso.com/assets/0e/20/22/12/0e20221284bc94fd51a34540fb55b03c---png_1000x_103c0_convert.png", category: "Pizza" },
+        { id: 6, name: "Go'shtli Pitsa 1", price: 75000, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeYxZEMX7Cjhsd3PnKCzS1Bb_ZBHOY7UyFhg&s", category: "Pizza" },
+        { id: 7, name: "Go'shtli Pitsa 2", price: 90000, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeYxZEMX7Cjhsd3PnKCzS1Bb_ZBHOY7UyFhg&s", category: "Pizza" },
+        { id: 8, name: "Margarita Pitsa", price: 65000, img: "https://adriano.com.ua/wp-content/uploads/2022/08/%D0%9C%D0%B0%D1%80%D0%B3%D0%B0%D1%80%D0%B8%D1%82%D0%B0.jpeg", category: "Pizza" },
+        { id: 9, name: "Peperonli Pitsa", price: 65000, img: "https://cdn.foodpicasso.com/assets/59/ea/75/2d/59ea752dde4979f03c5db5165797f029---png_1000x_103c0_convert.png", category: "Pizza" },
+        { id: 10, name: "Peperonli Pitsa", price: 75000, img: "https://cdn.foodpicasso.com/assets/59/ea/75/2d/59ea752dde4979f03c5db5165797f029---png_1000x_103c0_convert.png", category: "Pizza" },
+        { id: 11, name: "Tovuqli Pitsa", price: 65000, img: "https://cdn.foodpicasso.com/assets/59/ea/75/2d/59ea752dde4979f03c5db5165797f029---png_1000x_103c0_convert.png", category: "Pizza" },
+        { id: 12, name: "4 ta Sirli Pitsa", price: 55000, img: "https://cdn.zoomda.uz/products/2025/06/12/1749711559001138432.jpg", category: "Pizza" },
+        { id: 13, name: "Choco Pitsa", price: 90000, img: "https://as1.ftcdn.net/jpg/07/30/10/74/1000_F_730107452_FeQTBf0dwrnTX9B7v1Uv9PkgeYhlRehm.jpg", category: "Pizza" },
+        { id: 14, name: "Shaverma Pitsa", price: 60000, img: "https://moresushisverdlovo.ru/wp-content/uploads/2022/08/shaverma.jpg", category: "Pizza" },
+        { id: 15, name: "Bif Kabob Pitsa 30 sm", price: 75000, img: "https://back.baxtrestoran.uz/storage/Product/61/image_path/693a735178da4_original.webp", category: "Pizza" },
+        { id: 16, name: "Bif Kabob Pitsa 40 sm", price: 90000, img: "https://back.baxtrestoran.uz/storage/Product/61/image_path/693a735178da4_original.webp", category: "Pizza" },
+
+        { id: 11, name: "Classic Hot Dog", price: 12000, img: "https://www.belbrandsfoodservice.com/wp-content/uploads/2018/05/recipe-desktop-merkts-cheesy-hot-dawg.jpg", category: "Hot Dog" },
+        { id: 12, name: "Dvaynoy Hot Dog", price: 35000, img: "https://fairu.gusto.at/9f533c35-cbea-4ddb-b5e7-21732a2494f0/Hot+Dog.jpg?width=2560&height=1769&quality=90", category: "Hot Dog" },
+        { id: 13, name: "Go'shtli Hot Dog", price: 35000, img: "https://back.baxtrestoran.uz/storage/Product/84/image_path/693d7babe9c74_original.webp", category: "Hot Dog" },
+        { id: 14, name: "Sirli Hot Dog", price: 15000, img: "https://foodmetamorphosis.com/wp-content/uploads/2024/06/puerto-rican-hotdog.jpg", category: "Hot Dog" },
+        { id: 15, name: "Achchiq Hot Dog", price: 18000, img: "https://www.belbrandsfoodservice.com/wp-content/uploads/2018/05/recipe-desktop-merkts-cheesy-hot-dawg.jpg", category: "Hot Dog" },
+
+        { id: 16, name: "Coca Cola 1.5L", price: 22000, img: "https://images.uzum.uz/cd8gafrb3ho5lmur0lf0/original.jpg", category: "Ichimlik" },
+        { id: 17, name: "Fanta 1.5L", price: 22000, img: "https://images.uzum.uz/cthuastht56qpot7dns0/original.jpg", category: "Ichimlik" },
+        { id: 18, name: "Pepsi 1.5L", price: 22000, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhY3e-IlnDmsQZc7vkuvjE5g6sMl5m4d753Q&s", category: "Ichimlik" },
+        { id: 19, name: "Suv 0.5L", price: 5000, img: "https://sawepecomcdn.blob.core.windows.net/kfc-web-ordering/KFC_RS/34_WoltIntegration/05_web_delivery_termekkepek/13_drinks/440x440/kfc_srb_still_water_05l_440x440.png", category: "Ichimlik" }
     ]
 
     const addToCart = (product) => {

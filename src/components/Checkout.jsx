@@ -430,7 +430,6 @@ function Checkout() {
                                 name="address"
                                 value={formData.address}
                                 onChange={handleInputChange}
-                                readOnly
                                 placeholder="Koordinatalar avtomatik to'ldiriladi!"
                             />
                         </div>

@@ -35,8 +35,8 @@ function Checkout() {
             setUserName(tgUser.firstName)
             setFormData(prev => ({
                 ...prev,
-                firstName: tgUser.firstName,
-                lastName: tgUser.lastName
+                firstName: tgUser.firstName || '',
+                lastName: tgUser.lastName || ''
             }))
         }
     }, [])
@@ -115,57 +115,16 @@ function Checkout() {
                 popupAnchor: [0, -40]
             })
 
-            // Hover effektli marker (opsional)
-            const pulseIcon = window.L.divIcon({
-                className: 'custom-marker-pulse',
-                html: `
-                    <div style="position: relative;">
-                        <div style="
-                            position: absolute;
-                            width: 40px;
-                            height: 40px;
-                            background: #ff3b00;
-                            border-radius: 50%;
-                            animation: pulse 1.5s infinite;
-                        "></div>
-                        <div style="
-                            position: relative;
-                            width: 40px;
-                            height: 40px;
-                            background: linear-gradient(135deg, #ff6b35, #ff3b00);
-                            border-radius: 50%;
-                            border: 3px solid white;
-                            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                        ">
-                            <div style="
-                                width: 12px;
-                                height: 12px;
-                                background: white;
-                                border-radius: 50%;
-                            "></div>
-                        </div>
-                    </div>
-                `,
-                iconSize: [40, 40],
-                iconAnchor: [20, 40],
-                popupAnchor: [0, -40]
-            })
-
             map.on('click', (e) => {
                 if (markerRef.current) {
                     markerRef.current.remove()
                 }
                 
-                // Animatsiyali marker qo'shish
                 markerRef.current = window.L.marker([e.latlng.lat, e.latlng.lng], {
                     icon: customIcon,
                     riseOnHover: true
                 }).addTo(map)
                 
-                // Markerga popup qo'shish
                 markerRef.current.bindPopup(`
                     <div style="
                         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -177,7 +136,6 @@ function Checkout() {
                     </div>
                 `).openPopup()
                 
-                // 3 sekunddan keyin popup avtomatik yopiladi
                 setTimeout(() => {
                     if (markerRef.current) {
                         markerRef.current.closePopup()
@@ -230,11 +188,14 @@ function Checkout() {
         }
     }, [mapLoaded])
 
+    // 🔥 TUZATILGAN handleInputChange
     const handleInputChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        })
+        const { name, value } = e.target
+        console.log("Input o'zgardi:", name, value) // Debug uchun
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }))
     }
 
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -469,8 +430,7 @@ function Checkout() {
                                 name="address"
                                 value={formData.address}
                                 onChange={handleInputChange}
-                                placeholder="Koordinatalar avtomatik to'ldiriladi"
-                                readOnly
+                                placeholder="Uy, ko'cha, kirish raqami"
                             />
                         </div>
                     </div>

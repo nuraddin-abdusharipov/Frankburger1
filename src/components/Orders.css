@@ -59,6 +59,26 @@
     color: white;
 }
 
+.items-title {
+    color: black;
+}
+
+.order-item{
+    color: black;
+}
+
+.more-items {
+    color: #555;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.order-delivery-time {
+    color: #555;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
 .order-card:active {
     transform: scale(0.98);
 }

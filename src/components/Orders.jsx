@@ -226,7 +226,7 @@ function Orders() {
                                     </p>
 
                                     <p className="order-total">
-                                        💰 <strong>{order.totalAmount?.toLocaleString() || 0} so'm</strong>
+                                        💰Narxi <strong>{order.totalAmount?.toLocaleString() || 0} so'm</strong>
                                     </p>
                                 </div>
 

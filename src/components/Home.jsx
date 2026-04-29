@@ -29,6 +29,7 @@ function Home() {
 
     const categories = ["Barchasi", "Burger", "Pizza", "Hot Dog", "Ichimlik"]
 
+    // MUHIM: Har bir mahsulotning UNIQUE (o'ziga xos) id si bo'lishi kerak
     const allProductsList = [
         { id: 1, name: "Frank Burger", price: 55000, img: "https://d3af5evjz6cdzs.cloudfront.net/images/uploads/800x0/_92f500a1ab64dba500d217959650e0fd1704267708.jpg", category: "Burger" },
         { id: 2, name: "Big Burger", price: 45000, img: "https://www.osieurope.com/wp-content/uploads/2022/05/My-project-1.jpg", category: "Burger" },
@@ -40,7 +41,7 @@ function Home() {
         { id: 7, name: "Go'shtli Pitsa 2", price: 90000, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeYxZEMX7Cjhsd3PnKCzS1Bb_ZBHOY7UyFhg&s", category: "Pizza" },
         { id: 8, name: "Margarita Pitsa", price: 65000, img: "https://adriano.com.ua/wp-content/uploads/2022/08/%D0%9C%D0%B0%D1%80%D0%B3%D0%B0%D1%80%D0%B8%D1%82%D0%B0.jpeg", category: "Pizza" },
         { id: 9, name: "Peperonli Pitsa", price: 65000, img: "https://cdn.foodpicasso.com/assets/59/ea/75/2d/59ea752dde4979f03c5db5165797f029---png_1000x_103c0_convert.png", category: "Pizza" },
-        { id: 10, name: "Peperonli Pitsa", price: 75000, img: "https://cdn.foodpicasso.com/assets/59/ea/75/2d/59ea752dde4979f03c5db5165797f029---png_1000x_103c0_convert.png", category: "Pizza" },
+        { id: 10, name: "Peperonli Pitsa 2", price: 75000, img: "https://cdn.foodpicasso.com/assets/59/ea/75/2d/59ea752dde4979f03c5db5165797f029---png_1000x_103c0_convert.png", category: "Pizza" },
         { id: 11, name: "Tovuqli Pitsa", price: 65000, img: "https://cdn.foodpicasso.com/assets/59/ea/75/2d/59ea752dde4979f03c5db5165797f029---png_1000x_103c0_convert.png", category: "Pizza" },
         { id: 12, name: "4 ta Sirli Pitsa", price: 55000, img: "https://cdn.zoomda.uz/products/2025/06/12/1749711559001138432.jpg", category: "Pizza" },
         { id: 13, name: "Choco Pitsa", price: 90000, img: "https://as1.ftcdn.net/jpg/07/30/10/74/1000_F_730107452_FeQTBf0dwrnTX9B7v1Uv9PkgeYhlRehm.jpg", category: "Pizza" },
@@ -74,6 +75,7 @@ function Home() {
         })
     }
 
+    // Filter qilish funksiyasi
     const getFilteredProducts = () => {
         if (activeCategory === "Barchasi") {
             return allProductsList
@@ -87,14 +89,14 @@ function Home() {
         isDown = true
         startX = e.pageX
         scrollLeft = barRef.current.scrollLeft
-        cancelAnimationFrame(raf)
+        if (raf) cancelAnimationFrame(raf)
         document.body.style.userSelect = 'none'
     }
 
     const onMouseMove = (e) => {
         if (!isDown) return
         const x = e.pageX
-        const walk = x - startX
+        const walk = (x - startX) * 1.5
         barRef.current.scrollLeft = scrollLeft - walk
         velocity = walk
     }
@@ -107,8 +109,8 @@ function Home() {
     }
 
     const startInertia = () => {
-        const decay = 0.92
-        const minVelocity = 0.1
+        const decay = 0.95
+        const minVelocity = 0.5
 
         const animate = () => {
             velocity *= decay
@@ -127,6 +129,10 @@ function Home() {
             <nav className='nav'>
                 <img src="/logo.png" alt="Logo" />
                 <h2>Frank Burger</h2>
+                <Link to="/cart" className="cart-icon">
+                    🛒
+                    {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>}
+                </Link>
             </nav>
 
             <div 
@@ -141,7 +147,10 @@ function Home() {
                     <div 
                         key={cat}
                         className={`item ${activeCategory === cat ? 'active' : ''}`}
-                        onClick={() => setActiveCategory(cat)}
+                        onClick={() => {
+                            setActiveCategory(cat)
+                            console.log("Kategoriya tanlandi:", cat) // Debug uchun
+                        }}
                     >
                         {cat}
                     </div>
@@ -150,26 +159,32 @@ function Home() {
 
             <div className="products-container">
                 <div className="products-grid">
-                    {filteredProducts.map((product) => (
-                        <div key={product.id} className="product-card">
-                            <div className="product-img">
-                                <img src={product.img} alt={product.name} />
-                            </div>
-                            <div className="product-info">
-                                <h3>{product.name}</h3>
-                                <p className="price">{product.price.toLocaleString()} so'm</p>
-                                <button 
-                                    className="add-btn"
-                                    onClick={() => {
-                                        addToCart(product)
-                                        alert(`${product.name} savatga qo'shildi!`)
-                                    }}
-                                >
-                                    + Savatga qo'shish
-                                </button>
-                            </div>
+                    {filteredProducts.length === 0 ? (
+                        <div className="no-products">
+                            <p>Bu kategoriyada mahsulot yo'q</p>
                         </div>
-                    ))}
+                    ) : (
+                        filteredProducts.map((product) => (
+                            <div key={product.id} className="product-card">
+                                <div className="product-img">
+                                    <img src={product.img} alt={product.name} />
+                                </div>
+                                <div className="product-info">
+                                    <h3>{product.name}</h3>
+                                    <p className="price">{product.price.toLocaleString()} so'm</p>
+                                    <button 
+                                        className="add-btn"
+                                        onClick={() => {
+                                            addToCart(product)
+                                            alert(`${product.name} savatga qo'shildi!`)
+                                        }}
+                                    >
+                                        + Savatga qo'shish
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

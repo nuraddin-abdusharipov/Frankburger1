@@ -369,7 +369,7 @@ function Checkout() {
                 <h1>Zakazni rasmiylashtirish</h1>
                 {telegramId && (
                     <div className="telegram-badge">
-                        🤖 ID: {telegramId}
+                        ID: {telegramId}
                     </div>
                 )}
             </div>

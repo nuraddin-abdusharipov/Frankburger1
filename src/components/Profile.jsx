@@ -130,7 +130,7 @@ function Profile() {
                     )}
 
                     <div className="telegram-id">
-                        🤖 ID: {telegramId || '—'}
+                        ID: {telegramId || '—'}
                     </div>
                 </div>
 

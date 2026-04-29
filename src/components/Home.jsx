@@ -48,16 +48,16 @@ function Home() {
         { id: 15, name: "Bif Kabob Pitsa 30 sm", price: 75000, img: "https://back.baxtrestoran.uz/storage/Product/61/image_path/693a735178da4_original.webp", category: "Pizza" },
         { id: 16, name: "Bif Kabob Pitsa 40 sm", price: 90000, img: "https://back.baxtrestoran.uz/storage/Product/61/image_path/693a735178da4_original.webp", category: "Pizza" },
 
-        { id: 11, name: "Classic Hot Dog", price: 12000, img: "https://www.belbrandsfoodservice.com/wp-content/uploads/2018/05/recipe-desktop-merkts-cheesy-hot-dawg.jpg", category: "Hot Dog" },
-        { id: 12, name: "Dvaynoy Hot Dog", price: 35000, img: "https://fairu.gusto.at/9f533c35-cbea-4ddb-b5e7-21732a2494f0/Hot+Dog.jpg?width=2560&height=1769&quality=90", category: "Hot Dog" },
-        { id: 13, name: "Go'shtli Hot Dog", price: 35000, img: "https://back.baxtrestoran.uz/storage/Product/84/image_path/693d7babe9c74_original.webp", category: "Hot Dog" },
-        { id: 14, name: "Sirli Hot Dog", price: 15000, img: "https://foodmetamorphosis.com/wp-content/uploads/2024/06/puerto-rican-hotdog.jpg", category: "Hot Dog" },
-        { id: 15, name: "Achchiq Hot Dog", price: 18000, img: "https://www.belbrandsfoodservice.com/wp-content/uploads/2018/05/recipe-desktop-merkts-cheesy-hot-dawg.jpg", category: "Hot Dog" },
+        { id: 17, name: "Classic Hot Dog", price: 12000, img: "https://www.belbrandsfoodservice.com/wp-content/uploads/2018/05/recipe-desktop-merkts-cheesy-hot-dawg.jpg", category: "Hot Dog" },
+        { id: 18, name: "Dvaynoy Hot Dog", price: 35000, img: "https://fairu.gusto.at/9f533c35-cbea-4ddb-b5e7-21732a2494f0/Hot+Dog.jpg?width=2560&height=1769&quality=90", category: "Hot Dog" },
+        { id: 19, name: "Go'shtli Hot Dog", price: 35000, img: "https://back.baxtrestoran.uz/storage/Product/84/image_path/693d7babe9c74_original.webp", category: "Hot Dog" },
+        { id: 20, name: "Sirli Hot Dog", price: 15000, img: "https://foodmetamorphosis.com/wp-content/uploads/2024/06/puerto-rican-hotdog.jpg", category: "Hot Dog" },
+        { id: 21, name: "Achchiq Hot Dog", price: 18000, img: "https://www.belbrandsfoodservice.com/wp-content/uploads/2018/05/recipe-desktop-merkts-cheesy-hot-dawg.jpg", category: "Hot Dog" },
 
-        { id: 16, name: "Coca Cola 1.5L", price: 22000, img: "https://images.uzum.uz/cd8gafrb3ho5lmur0lf0/original.jpg", category: "Ichimlik" },
-        { id: 17, name: "Fanta 1.5L", price: 22000, img: "https://images.uzum.uz/cthuastht56qpot7dns0/original.jpg", category: "Ichimlik" },
-        { id: 18, name: "Pepsi 1.5L", price: 22000, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhY3e-IlnDmsQZc7vkuvjE5g6sMl5m4d753Q&s", category: "Ichimlik" },
-        { id: 19, name: "Suv 0.5L", price: 5000, img: "https://sawepecomcdn.blob.core.windows.net/kfc-web-ordering/KFC_RS/34_WoltIntegration/05_web_delivery_termekkepek/13_drinks/440x440/kfc_srb_still_water_05l_440x440.png", category: "Ichimlik" }
+        { id: 22, name: "Coca Cola 1.5L", price: 22000, img: "https://images.uzum.uz/cd8gafrb3ho5lmur0lf0/original.jpg", category: "Ichimlik" },
+        { id: 23, name: "Fanta 1.5L", price: 22000, img: "https://images.uzum.uz/cthuastht56qpot7dns0/original.jpg", category: "Ichimlik" },
+        { id: 24, name: "Pepsi 1.5L", price: 22000, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhY3e-IlnDmsQZc7vkuvjE5g6sMl5m4d753Q&s", category: "Ichimlik" },
+        { id: 25, name: "Suv 0.5L", price: 5000, img: "https://sawepecomcdn.blob.core.windows.net/kfc-web-ordering/KFC_RS/34_WoltIntegration/05_web_delivery_termekkepek/13_drinks/440x440/kfc_srb_still_water_05l_440x440.png", category: "Ichimlik" }
     ]
 
     const addToCart = (product) => {

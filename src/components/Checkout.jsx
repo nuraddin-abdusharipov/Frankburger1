@@ -1,5 +1,5 @@
 import './Checkout.css'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { db, ordersCollection, Timestamp, addDoc } from '../firebase'
 import { getTelegramUser, expandTelegramApp, showTelegramAlert, hapticFeedback } from '../utils/telegram'
@@ -20,28 +20,27 @@ function Checkout() {
     })
     const [selectedLocation, setSelectedLocation] = useState(null)
     const [mapLoaded, setMapLoaded] = useState(false)
+    const mapRef = useRef(null)
+    const markerRef = useRef(null)
 
-    // Telegram bot sozlamalari
     const TELEGRAM_BOT_TOKEN = "8771407234:AAGculoSuCYdIhsG1uzgCKTY37HP608uXzo"
-    const ADMIN_CHAT_ID = "7787131118"  // Admin chat ID (xabar shu yerga keladi)
+    const ADMIN_CHAT_ID = "7787131118"
 
-    // REAL Telegram ma'lumotlarini olish
     useEffect(() => {
-    expandTelegramApp()
-    const tgUser = getTelegramUser()
-    
-    if (tgUser && tgUser.id) {
-        setTelegramId(tgUser.id)
-        setUserName(tgUser.firstName)
-        setFormData(prev => ({
-            ...prev,
-            firstName: tgUser.firstName,
-            lastName: tgUser.lastName
-        }))
-    }
-}, [])
+        expandTelegramApp()
+        const tgUser = getTelegramUser()
+        
+        if (tgUser && tgUser.id) {
+            setTelegramId(tgUser.id)
+            setUserName(tgUser.firstName)
+            setFormData(prev => ({
+                ...prev,
+                firstName: tgUser.firstName,
+                lastName: tgUser.lastName
+            }))
+        }
+    }, [])
 
-    // Savatni yuklash
     useEffect(() => {
         const savedCart = localStorage.getItem('cart')
         if (!savedCart || JSON.parse(savedCart).length === 0) {
@@ -50,7 +49,7 @@ function Checkout() {
         setCart(JSON.parse(savedCart || '[]'))
     }, [navigate])
 
-    // Xarita
+    // Xarita va custom marker icon yaratish
     useEffect(() => {
         const script = document.createElement('script')
         script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
@@ -65,19 +64,126 @@ function Checkout() {
     }, [])
 
     useEffect(() => {
-        if (mapLoaded && !selectedLocation && window.L) {
-            const map = window.L.map('map').setView([41.2995, 69.2401], 13)
+        if (mapLoaded && !mapRef.current && window.L) {
+            // Xiva markazi
+            const map = window.L.map('map').setView([41.3783, 60.3639], 14)
             window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap'
             }).addTo(map)
+            mapRef.current = map
 
-            let marker = null
+            // Chiroyli marker ikonkasi yaratish
+            const customIcon = window.L.divIcon({
+                className: 'custom-marker',
+                html: `
+                    <div style="
+                        position: relative;
+                        width: 40px;
+                        height: 40px;
+                        background: linear-gradient(135deg, #ff6b35, #ff3b00);
+                        border-radius: 50%;
+                        border: 3px solid white;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    ">
+                        <div style="
+                            width: 12px;
+                            height: 12px;
+                            background: white;
+                            border-radius: 50%;
+                            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+                        "></div>
+                        <div style="
+                            position: absolute;
+                            bottom: -12px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 0;
+                            height: 0;
+                            border-left: 8px solid transparent;
+                            border-right: 8px solid transparent;
+                            border-top: 12px solid #ff3b00;
+                        "></div>
+                    </div>
+                `,
+                iconSize: [40, 40],
+                iconAnchor: [20, 40],
+                popupAnchor: [0, -40]
+            })
+
+            // Hover effektli marker (opsional)
+            const pulseIcon = window.L.divIcon({
+                className: 'custom-marker-pulse',
+                html: `
+                    <div style="position: relative;">
+                        <div style="
+                            position: absolute;
+                            width: 40px;
+                            height: 40px;
+                            background: #ff3b00;
+                            border-radius: 50%;
+                            animation: pulse 1.5s infinite;
+                        "></div>
+                        <div style="
+                            position: relative;
+                            width: 40px;
+                            height: 40px;
+                            background: linear-gradient(135deg, #ff6b35, #ff3b00);
+                            border-radius: 50%;
+                            border: 3px solid white;
+                            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        ">
+                            <div style="
+                                width: 12px;
+                                height: 12px;
+                                background: white;
+                                border-radius: 50%;
+                            "></div>
+                        </div>
+                    </div>
+                `,
+                iconSize: [40, 40],
+                iconAnchor: [20, 40],
+                popupAnchor: [0, -40]
+            })
 
             map.on('click', (e) => {
-                if (marker) {
-                    marker.remove()
+                if (markerRef.current) {
+                    markerRef.current.remove()
                 }
-                marker = window.L.marker([e.latlng.lat, e.latlng.lng]).addTo(map)
+                
+                // Animatsiyali marker qo'shish
+                markerRef.current = window.L.marker([e.latlng.lat, e.latlng.lng], {
+                    icon: customIcon,
+                    riseOnHover: true
+                }).addTo(map)
+                
+                // Markerga popup qo'shish
+                markerRef.current.bindPopup(`
+                    <div style="
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        padding: 5px;
+                        text-align: center;
+                    ">
+                        <strong style="color: #ff3b00;">🍔 Frank Burger</strong><br/>
+                        📍 Yetkazib berish manzili
+                    </div>
+                `).openPopup()
+                
+                // 3 sekunddan keyin popup avtomatik yopiladi
+                setTimeout(() => {
+                    if (markerRef.current) {
+                        markerRef.current.closePopup()
+                    }
+                }, 3000)
+                
                 setSelectedLocation({
                     lat: e.latlng.lat,
                     lng: e.latlng.lng
@@ -89,9 +195,40 @@ function Checkout() {
                 hapticFeedback()
             })
 
-            return () => map.remove()
+            // CSS animatsiyani qo'shish
+            const style = document.createElement('style')
+            style.textContent = `
+                @keyframes pulse {
+                    0% {
+                        transform: scale(1);
+                        opacity: 0.8;
+                    }
+                    70% {
+                        transform: scale(1.5);
+                        opacity: 0;
+                    }
+                    100% {
+                        transform: scale(1);
+                        opacity: 0;
+                    }
+                }
+                .custom-marker {
+                    transition: transform 0.2s ease;
+                }
+                .custom-marker:hover {
+                    transform: scale(1.1);
+                }
+            `
+            document.head.appendChild(style)
+
+            return () => {
+                if (mapRef.current) {
+                    mapRef.current.remove()
+                    mapRef.current = null
+                }
+            }
         }
-    }, [mapLoaded, selectedLocation])
+    }, [mapLoaded])
 
     const handleInputChange = (e) => {
         setFormData({
@@ -102,7 +239,6 @@ function Checkout() {
 
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
-    // 1. ADMIN GA XABAR YUBORISH
     const sendToAdmin = async (orderData) => {
         let message = `🆕 YANGI ZAKAZ! 🆕\n\n`
         message += `🤖 Telegram ID: ${orderData.telegramId}\n`
@@ -145,7 +281,6 @@ function Checkout() {
         }
     }
 
-    // 2. USERGA XABAR YUBORISH (zakaz qabul qilingani haqida)
     const sendToUser = async (orderData) => {
         let message = `🍔 FRANK BURGER 🍔\n\n`
         message += `✅ Sizning zakazingiz qabul qilindi!\n\n`
@@ -163,7 +298,7 @@ function Checkout() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    chat_id: orderData.telegramId,  // Foydalanuvchining Telegram ID si
+                    chat_id: orderData.telegramId,
                     text: message,
                     parse_mode: 'HTML'
                 })
@@ -181,7 +316,6 @@ function Checkout() {
         }
     }
 
-    // Firebase ga saqlash
     const saveToFirebase = async (orderData) => {
         try {
             const docRef = await addDoc(ordersCollection, orderData)
@@ -242,26 +376,18 @@ function Checkout() {
             createdAt: Timestamp.now()
         }
 
-        // 1. Firebase ga saqlash
         await saveToFirebase(orderData)
-        
-        // 2. Admin ga xabar yuborish
         await sendToAdmin(orderData)
-        
-        // 3. Foydalanuvchiga xabar yuborish (zakaz qabul qilingani haqida)
         await sendToUser(orderData)
         
-        // 4. LocalStorage dan savatni tozalash
         localStorage.removeItem('cart')
         
         setLoading(false)
         
-        // 5. Telegram da xabar ko'rsatish
         const successMessage = `✅ Zakaz qabul qilindi!\n\n🆔 Zakaz ID: ${orderData.orderId}\n💰 Summa: ${totalPrice.toLocaleString()} so'm\n⏰ Yetkazib berish: ${formData.deliveryTime}\n\n📋 Zakaz holatini "Buyurtmalar" bo'limidan kuzatishingiz mumkin.`
         
         showTelegramAlert(successMessage)
         
-        // 6. Bosh sahifaga qaytish
         navigate('/')
     }
 
@@ -343,7 +469,8 @@ function Checkout() {
                                 name="address"
                                 value={formData.address}
                                 onChange={handleInputChange}
-                                placeholder="Uy, ko'cha, kirish raqami"
+                                placeholder="Koordinatalar avtomatik to'ldiriladi"
+                                readOnly
                             />
                         </div>
                     </div>

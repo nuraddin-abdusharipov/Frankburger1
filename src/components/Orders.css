@@ -48,6 +48,17 @@
     transition: 0.2s ease;
 }
 
+.order-now-btn {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 50px;
+    margin-top: 250px;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+}
+
 .order-card:active {
     transform: scale(0.98);
 }

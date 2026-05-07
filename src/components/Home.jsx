@@ -128,11 +128,6 @@ function Home() {
         <div className="Home">
             <nav className='nav'>
                 <img src="/logo.png" alt="Logo" />
-                <h2>Frank Burger</h2>
-                <Link to="/cart" className="cart-icon">
-                    🛒
-                    {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>}
-                </Link>
             </nav>
 
             <div 

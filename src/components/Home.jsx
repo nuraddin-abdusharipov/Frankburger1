@@ -14,7 +14,6 @@ function Home() {
     const [activeCategory, setActiveCategory] = useState("Barchasi")
     const [cart, setCart] = useState([])
 
-    // LocalStorage dan yuklash
     useEffect(() => {
         const savedCart = localStorage.getItem('cart')
         if (savedCart) {
@@ -22,14 +21,12 @@ function Home() {
         }
     }, [])
 
-    // LocalStorage ga saqlash
     useEffect(() => {
         localStorage.setItem('cart', JSON.stringify(cart))
     }, [cart])
 
     const categories = ["Barchasi", "Burger", "Pizza", "Hot Dog", "Ichimlik"]
 
-    // MUHIM: Har bir mahsulotning UNIQUE (o'ziga xos) id si bo'lishi kerak
     const allProductsList = [
         { id: 1, name: "Frank Burger", price: 55000, img: "https://d3af5evjz6cdzs.cloudfront.net/images/uploads/800x0/_92f500a1ab64dba500d217959650e0fd1704267708.jpg", category: "Burger" },
         { id: 2, name: "Big Burger", price: 45000, img: "https://www.osieurope.com/wp-content/uploads/2022/05/My-project-1.jpg", category: "Burger" },
@@ -75,7 +72,6 @@ function Home() {
         })
     }
 
-    // Filter qilish funksiyasi
     const getFilteredProducts = () => {
         if (activeCategory === "Barchasi") {
             return allProductsList

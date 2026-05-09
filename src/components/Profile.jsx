@@ -15,7 +15,6 @@ function Profile() {
 
     const ADMIN_IDS = [7164122768, 7787131118]
 
-    // 🔥 Telegram user olish
     useEffect(() => {
     const tg = window.Telegram?.WebApp
 
@@ -43,10 +42,9 @@ function Profile() {
         }
     }
 
-    setTimeout(() => setLoading(false), 500) // 🔥 delay
+    setTimeout(() => setLoading(false), 500)
 }, [])
 
-    // 🔥 Statistika olish
     useEffect(() => {
         if (!telegramId) return
 
@@ -88,7 +86,6 @@ function Profile() {
         })
     }
 
-    // 🔄 Loading
     if (loading) {
         return (
             <div className="ProfilePage">
@@ -109,7 +106,6 @@ function Profile() {
 
             <div className="profile-content">
 
-                {/* Avatar */}
                 <div className="profile-avatar-section">
                     <div className="avatar">
                         {user?.photoUrl ? (
@@ -134,7 +130,6 @@ function Profile() {
                     </div>
                 </div>
 
-                {/* Admin */}
                 {isAdmin && (
                     <div className="admin-section">
                         <button onClick={goToAdminPanel} className="admin-btn">
@@ -143,7 +138,6 @@ function Profile() {
                     </div>
                 )}
 
-                {/* Statistika */}
                 <div className="stats-section">
                     <h3>Statistika</h3>
                     <div className="stats-grid">
@@ -167,7 +161,6 @@ function Profile() {
                     </div>
                 </div>
 
-                {/* Info */}
                 <div className="info-section">
                     <h3>Ma'lumotlar</h3>
 

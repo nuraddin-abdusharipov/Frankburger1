@@ -16,10 +16,8 @@ function Footer() {
 
     updateCartCount()
     
-    // Savat o'zgarishini kuzatish
     window.addEventListener('storage', updateCartCount)
     
-    // Custom event uchun
     const handleCartUpdate = () => updateCartCount()
     window.addEventListener('cartUpdated', handleCartUpdate)
     

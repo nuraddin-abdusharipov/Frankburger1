@@ -1,6 +1,3 @@
-// src/utils/telegram.js
-
-// Telegram WebApp dan foydalanuvchi ma'lumotlarini olish
 export const getTelegramUser = () => {
   if (window.Telegram && window.Telegram.WebApp) {
     const webApp = window.Telegram.WebApp
@@ -20,14 +17,12 @@ export const getTelegramUser = () => {
   return null
 }
 
-// Telegram WebApp ni to'liq ekran qilish
 export const expandTelegramApp = () => {
   if (window.Telegram && window.Telegram.WebApp) {
     window.Telegram.WebApp.expand()
   }
 }
 
-// Telegram da alert ko'rsatish
 export const showTelegramAlert = (message) => {
   if (window.Telegram && window.Telegram.WebApp) {
     window.Telegram.WebApp.showAlert(message)
@@ -36,7 +31,6 @@ export const showTelegramAlert = (message) => {
   }
 }
 
-// Telegram da confirm ko'rsatish
 export const showTelegramConfirm = (message, callback) => {
   if (window.Telegram && window.Telegram.WebApp) {
     window.Telegram.WebApp.showConfirm(message, callback)
@@ -45,7 +39,6 @@ export const showTelegramConfirm = (message, callback) => {
   }
 }
 
-// Haptic feedback (tebranish)
 export const hapticFeedback = () => {
   if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
     window.Telegram.WebApp.HapticFeedback.impactOccurred('light')

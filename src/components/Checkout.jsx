@@ -49,7 +49,6 @@ function Checkout() {
         setCart(JSON.parse(savedCart || '[]'))
     }, [navigate])
 
-    // Xarita va custom marker icon yaratish
     useEffect(() => {
         const script = document.createElement('script')
         script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
@@ -65,14 +64,12 @@ function Checkout() {
 
     useEffect(() => {
         if (mapLoaded && !mapRef.current && window.L) {
-            // Xiva markazi
             const map = window.L.map('map').setView([41.3783, 60.3639], 14)
             window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap'
             }).addTo(map)
             mapRef.current = map
 
-            // Chiroyli marker ikonkasi yaratish
             const customIcon = window.L.divIcon({
                 className: 'custom-marker',
                 html: `
@@ -153,7 +150,6 @@ function Checkout() {
                 hapticFeedback()
             })
 
-            // CSS animatsiyani qo'shish
             const style = document.createElement('style')
             style.textContent = `
                 @keyframes pulse {
@@ -188,10 +184,9 @@ function Checkout() {
         }
     }, [mapLoaded])
 
-    // 🔥 TUZATILGAN handleInputChange
     const handleInputChange = (e) => {
         const { name, value } = e.target
-        console.log("Input o'zgardi:", name, value) // Debug uchun
+        console.log("Input o'zgardi:", name, value)
         setFormData(prev => ({
             ...prev,
             [name]: value

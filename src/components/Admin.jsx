@@ -20,7 +20,6 @@ function Admin() {
     const ADMIN_IDS = [7164122768, 7787131118]
     const TELEGRAM_BOT_TOKEN = "8771407234:AAGculoSuCYdIhsG1uzgCKTY37HP608uXzo"
 
-    // Leaflet ni CDN dan yuklash
     useEffect(() => {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -40,7 +39,6 @@ function Admin() {
         };
     }, []);
 
-    // Admin tekshiruvi
     useEffect(() => {
         if (window.Telegram && window.Telegram.WebApp) {
             const webApp = window.Telegram.WebApp;
@@ -63,14 +61,12 @@ function Admin() {
         }
     }, [navigate]);
 
-    // Zakazlarni yuklash
     useEffect(() => {
         if (isAdmin) {
             fetchOrders();
         }
     }, [isAdmin]);
 
-    // Agar orderId URL da bo'lsa, detalni yuklash
     useEffect(() => {
         if (orderId && isAdmin) {
             fetchOrderDetail(orderId);
@@ -79,7 +75,6 @@ function Admin() {
         }
     }, [orderId, isAdmin]);
 
-    // Xarita yaratish
     useEffect(() => {
         if (selectedOrder && selectedOrder.delivery?.coordinates && mapRef.current && !mapInstanceRef.current && leafletLoaded && window.L) {
             const L = window.L;
@@ -141,7 +136,6 @@ function Admin() {
         }
     };
 
-    // Statusga qarab foydalanuvchiga xabar yuborish
     const sendStatusMessageToUser = async (orderData, newStatus) => {
         let message = `🍔 FRANK BURGER 🍔\n\n`
         message += `🆔 Buyurtma ID: ${orderData.orderId}\n`
@@ -214,7 +208,6 @@ function Admin() {
                 setSelectedOrder(prev => ({ ...prev, status: newStatus }));
             }
             
-            // Statusga qarab foydalanuvchiga xabar yuborish
             const userMessageSent = await sendStatusMessageToUser(orderData || selectedOrder, newStatus)
             
             let statusText = ''
@@ -282,7 +275,6 @@ function Admin() {
         return null;
     }
 
-    // Order detail view
     if (orderId && selectedOrder) {
         return (
             <div className="AdminPage">
@@ -411,7 +403,6 @@ function Admin() {
         );
     }
 
-    // Orders list view
     const filteredOrders = getFilteredOrders();
     const stats = {
         total: orders.length,

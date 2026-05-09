@@ -20,7 +20,6 @@ function Orders() {
 
     const ORDERS_PER_PAGE = 10
 
-    // 🔥 TELEGRAM USER (fallback bilan)
     useEffect(() => {
         const tg = window.Telegram?.WebApp
 
@@ -34,15 +33,12 @@ function Orders() {
                 setTelegramId(user.id)
             } else {
                 console.log("Telegram user yo‘q, test uchun ID: 7787131118")
-                // Test uchun admin ID ni ishlatamiz
             }
         } else {
             console.log("Telegram yo‘q — test mode")
-            // Test uchun admin ID
         }
     }, [])
 
-    // 📦 FETCH ORDERS (orderBy ni olib tashladim va frontendda saralaymiz)
     const fetchOrders = async (loadMore = false) => {
         if (!telegramId) return
 
@@ -51,18 +47,17 @@ function Orders() {
         try {
             let q
             
-            // 🔥 MUHIM: orderBy ni vaqtincha olib tashlaymiz (index xatosini oldini olish uchun)
             if (loadMore && lastDoc) {
                 q = query(
                     ordersCollection,
-                    where("telegramId", "==", Number(telegramId)), // Number ga o'tkazamiz
+                    where("telegramId", "==", Number(telegramId)),
                     startAfter(lastDoc),
                     limit(ORDERS_PER_PAGE)
                 )
             } else {
                 q = query(
                     ordersCollection,
-                    where("telegramId", "==", Number(telegramId)), // Number ga o'tkazamiz
+                    where("telegramId", "==", Number(telegramId)),
                     limit(ORDERS_PER_PAGE)
                 )
             }
@@ -74,7 +69,6 @@ function Orders() {
                 ...doc.data()
             }))
 
-            // Frontendda sana bo'yicha saralaymiz (eng yangisi birinchi)
             data = data.sort((a, b) => {
                 const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0)
                 const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0)
@@ -94,7 +88,6 @@ function Orders() {
 
         } catch (err) {
             console.error("🔥 Firebase xatolik:", err)
-            // Xatolik bo'lsa, oddiy so'rovni sinab ko'ramiz (hech qanday filter bilan)
             try {
                 const q = query(ordersCollection, limit(ORDERS_PER_PAGE))
                 const snapshot = await getDocs(q)
@@ -102,7 +95,6 @@ function Orders() {
                     id: doc.id,
                     ...doc.data()
                 }))
-                // Telegram ID bo'yicha filter qilamiz
                 allOrders = allOrders.filter(order => order.telegramId === Number(telegramId))
                 allOrders = allOrders.sort((a, b) => {
                     const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0)
@@ -125,14 +117,12 @@ function Orders() {
         }
     }, [telegramId])
 
-    // 📥 LOAD MORE
     const loadMore = () => {
         if (!loading && hasMore) {
             fetchOrders(true)
         }
     }
 
-    // 📊 STATUS
     const getStatus = (status) => {
         switch (status) {
             case "Yangi": return "🆕 Yangi"
@@ -143,7 +133,6 @@ function Orders() {
         }
     }
 
-    // Formatlash funksiyasi
     const formatDate = (timestamp) => {
         if (!timestamp) return "Sana yo‘q"
         if (timestamp.toDate) {
@@ -155,7 +144,6 @@ function Orders() {
         return "Sana yo‘q"
     }
 
-    // ❗ Telegram yo‘q bo‘lsa
     if (!telegramId) {
         return (
             <div className="OrdersPage">
@@ -168,7 +156,6 @@ function Orders() {
         )
     }
 
-    // ⏳ Loading
     if (loading && orders.length === 0) {
         return (
             <div className="OrdersPage">

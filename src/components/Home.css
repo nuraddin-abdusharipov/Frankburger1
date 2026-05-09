@@ -24,7 +24,6 @@
     filter: drop-shadow(0 2px 10px rgba(255,107,53,0.3));
 }
 
-/* Kategoriyalar paneli */
 .bar {
     display: flex;
     width: 100%;
@@ -109,7 +108,6 @@
     padding-bottom: 20px;
 }
 
-/* Mahsulot kartasi */
 .product-card {
     display: flex;
     background: rgba(255, 255, 255, 0.05);

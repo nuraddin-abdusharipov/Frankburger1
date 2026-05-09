@@ -35,12 +35,10 @@ function Orders() {
             } else {
                 console.log("Telegram user yo‘q, test uchun ID: 7787131118")
                 // Test uchun admin ID ni ishlatamiz
-                setTelegramId(7787131118)
             }
         } else {
             console.log("Telegram yo‘q — test mode")
             // Test uchun admin ID
-            setTelegramId(7787131118)
         }
     }, [])
 
@@ -163,7 +161,7 @@ function Orders() {
             <div className="OrdersPage">
                 <div className="orders-header">
                     <Link style={{textDecoration: "none"}} to="/">← Orqaga</Link>
-                    <h2>Mening zakazlarim</h2>
+                    <h2>Mening buyurtmalarim</h2>
                 </div>
                 <p style={{ textAlign: 'center', padding: '20px' }}>⏳ Yuklanmoqda...</p>
             </div>
@@ -176,9 +174,9 @@ function Orders() {
             <div className="OrdersPage">
                 <div className="orders-header">
                     <Link to="/">← Orqaga</Link>
-                    <h2>Mening zakazlarim</h2>
+                    <h2>Mening buyurtmalarim</h2>
                 </div>
-                <p style={{ textAlign: 'center', padding: '20px' }}>⏳ Zakazlar yuklanmoqda...</p>
+                <p style={{ textAlign: 'center', padding: '20px' }}>⏳ Buyurtmalar yuklanmoqda...</p>
             </div>
         )
     }
@@ -188,14 +186,14 @@ function Orders() {
 
             <div className="orders-header">
                 <Link to="/" className="back-link">← Orqaga</Link>
-                <h2>📦 Mening zakazlarim</h2>
+                <h2>📦 Mening buyurtmalarim</h2>
                 <p className="telegram-id-text">ID: {telegramId}</p>
             </div>
 
             {orders.length === 0 ? (
                 <div className="no-orders">
-                    <p>😕 Siz hali zakaz bermagansiz</p>
-                    <Link to="/" className="order-now-btn">Zakaz berish</Link>
+                    <p>😕 Siz hali buyurtma bermagansiz</p>
+                    <Link to="/" className="order-now-btn">Buyurtma berish</Link>
                 </div>
             ) : (
                 <>
@@ -204,7 +202,7 @@ function Orders() {
                             <div key={order.id} className="order-card">
 
                                 <div className="order-header">
-                                    <strong className="order-number">Zakaz #{order.orderId || order.id.slice(-6)}</strong>
+                                    <strong className="order-number">Buyurtma #{order.orderId || order.id.slice(-6)}</strong>
                                     <span className={`order-status status-${order.status?.toLowerCase() || 'yangi'}`}>
                                         {getStatus(order.status)}
                                     </span>

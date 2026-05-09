@@ -201,21 +201,20 @@ function Checkout() {
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
     const sendToAdmin = async (orderData) => {
-        let message = `🆕 YANGI ZAKAZ! 🆕\n\n`
+        let message = `🆕 YANGI BUYURTMA! 🆕\n\n`
         message += `🤖 Telegram ID: ${orderData.telegramId}\n`
         message += `👤 Mijoz: ${orderData.customer.fullName}\n`
         message += `📞 Telefon: ${orderData.customer.phone}\n`
         message += `📍 Manzil: ${orderData.delivery.address}\n`
         message += `⏰ Yetkazib berish: ${orderData.delivery.deliveryTime}\n`
         message += `📝 Izoh: ${orderData.delivery.notes || "Yo'q"}\n\n`
-        message += `🛍️ ZAKAZ:\n`
-        
+        message += `🛍️ BUYURTMA:\n`
         orderData.items.forEach(item => {
             message += `• ${item.name} x${item.quantity} = ${item.total.toLocaleString()} so'm\n`
         })
         
         message += `\n💰 JAMI: ${orderData.totalAmount.toLocaleString()} so'm\n`
-        message += `🆔 Zakaz ID: ${orderData.orderId}\n`
+        message += `🆔 Buyurtma ID: ${orderData.orderId}\n`
         message += `📅 Vaqt: ${new Date(orderData.orderDate).toLocaleString()}`
 
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
@@ -244,12 +243,12 @@ function Checkout() {
 
     const sendToUser = async (orderData) => {
         let message = `🍔 FRANK BURGER 🍔\n\n`
-        message += `✅ Sizning zakazingiz qabul qilindi!\n\n`
-        message += `🆔 Zakaz ID: ${orderData.orderId}\n`
+        message += `✅ Sizning buyurtmangiz qabul qilindi!\n\n`
+        message += `🆔 Buyurtma ID: ${orderData.orderId}\n`
         message += `💰 Jami: ${orderData.totalAmount.toLocaleString()} so'm\n`
         message += `⏰ Yetkazib berish: ${orderData.delivery.deliveryTime}\n`
         message += `📍 Manzil: ${orderData.delivery.address}\n\n`
-        message += `📦 Zakaz holatini "Buyurtmalar" bo'limidan kuzatishingiz mumkin.\n\n`
+        message += `📦 Buyurtma holatini "Buyurtmalar" bo'limidan kuzatishingiz mumkin.\n\n`
         message += `☎️ Savollar uchun: +998 XX XXX XX XX`
 
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
@@ -345,7 +344,7 @@ function Checkout() {
         
         setLoading(false)
         
-        const successMessage = `✅ Zakaz qabul qilindi!\n\n🆔 Zakaz ID: ${orderData.orderId}\n💰 Summa: ${totalPrice.toLocaleString()} so'm\n⏰ Yetkazib berish: ${formData.deliveryTime}\n\n📋 Zakaz holatini "Buyurtmalar" bo'limidan kuzatishingiz mumkin.`
+        const successMessage = `✅ Buyurtma qabul qilindi!\n\n🆔 Buyurtma ID: ${orderData.orderId}\n💰 Summa: ${totalPrice.toLocaleString()} so'm\n⏰ Yetkazib berish: ${formData.deliveryTime}\n\n📋 Buyurtma holatini "Buyurtmalar" bo'limidan kuzatishingiz mumkin.`
         
         showTelegramAlert(successMessage)
         
@@ -479,7 +478,7 @@ function Checkout() {
                     </div>
 
                     <button type="submit" className="submit-btn" disabled={loading}>
-                        {loading ? "Yuborilmoqda..." : "✅ Zakazni tasdiqlash"}
+                        {loading ? "Yuborilmoqda..." : "✅ Buyurtmani tasdiqlash"}
                     </button>
                 </form>
             </div>

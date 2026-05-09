@@ -57,7 +57,7 @@ function Admin() {
             }
             webApp.expand();
         } else {
-            const testId = parseInt(localStorage.getItem('test_tg_id') || '7164122768');
+            const testId = parseInt(localStorage.getItem('test_tg_id'));
             setTelegramId(testId);
             setIsAdmin(ADMIN_IDS.includes(testId));
         }
@@ -144,26 +144,26 @@ function Admin() {
     // Statusga qarab foydalanuvchiga xabar yuborish
     const sendStatusMessageToUser = async (orderData, newStatus) => {
         let message = `🍔 FRANK BURGER 🍔\n\n`
-        message += `🆔 Zakaz ID: ${orderData.orderId}\n`
+        message += `🆔 Buyurtma ID: ${orderData.orderId}\n`
         message += `💰 Jami: ${orderData.totalAmount.toLocaleString()} so'm\n\n`
         
         switch(newStatus) {
             case 'Tayyorlanmoqda':
-                message += `👨‍🍳 Sizning zakazingiz TAYYORLANMOQDA!\n\n`
+                message += `👨‍🍳 Sizning buyurtmangiz TAYYORLANMOQDA!\n\n`
                 message += `🔧 Oshpazlar buyurtmangizni tayyorlashga kirishdi.\n`
                 message += `⏱️ Tez orada yetkazib berish xizmatiga topshiriladi.\n\n`
                 message += `📦 Holati: Tayyorlanmoqda 🔧`
                 break
                 
             case 'Yetkazilmoqda':
-                message += `🛵 Sizning zakazingiz YETKAZILMOQDA!\n\n`
+                message += `🛵 Sizning buyurtmangiz YETKAZILMOQDA!\n\n`
                 message += `🚚 Buyurtmangiz yo'lda! Tez orada sizga yetib boradi.\n`
                 message += `📍 Yetkazib beruvchi manzilingizga yo'l oldi.\n\n`
                 message += `📦 Holati: Yetkazilmoqda 🚚`
                 break
                 
             case 'Bajarilgan':
-                message += `✅ Sizning zakazingiz BAJARILDI!\n\n`
+                message += `✅ Sizning buyurtmangiz BAJARILDI!\n\n`
                 message += `🎉 Buyurtmangiz muvaffaqiyatli yakunlandi!\n`
                 message += `⭐ Bizni tanlaganingiz uchun rahmat!\n`
                 message += `🍽️ Yana xush kelibsiz!\n\n`
@@ -226,9 +226,9 @@ function Admin() {
             }
             
             if (userMessageSent) {
-                showTelegramAlert(`✅ Zakaz statusi "${statusText}" ga o'zgartirildi va foydalanuvchiga xabar yuborildi!`)
+                showTelegramAlert(`✅ Buyurtma statusi "${statusText}" ga o'zgartirildi va foydalanuvchiga xabar yuborildi!`)
             } else {
-                showTelegramAlert(`✅ Zakaz statusi "${statusText}" ga o'zgartirildi! (Foydalanuvchiga xabar yuborilmadi)`)
+                showTelegramAlert(`✅ Buyurtma statusi "${statusText}" ga o'zgartirildi! (Foydalanuvchiga xabar yuborilmadi)`)
             }
             
             hapticFeedback()
@@ -290,7 +290,7 @@ function Admin() {
                     <button onClick={() => navigate('/admin')} className="back-btn">
                         ← Orqaga
                     </button>
-                    <h1>Zakaz #{selectedOrder.orderId}</h1>
+                    <h1>Buyurtma #{selectedOrder.orderId}</h1>
                 </div>
 
                 <div className="order-detail">
@@ -337,7 +337,7 @@ function Admin() {
                             <span className="detail-value">{selectedOrder.delivery?.deliveryTime}</span>
                         </div>
                         <div className="detail-row">
-                            <span className="detail-label">Zakaz berilgan vaqt:</span>
+                            <span className="detail-label">Buyurtma berilgan vaqt:</span>
                             <span className="detail-value">{new Date(selectedOrder.orderDate).toLocaleString()}</span>
                         </div>
                         <div className="detail-row">
@@ -400,7 +400,7 @@ function Admin() {
                                 
                                 {selectedOrder.status === 'Bajarilgan' && (
                                     <div className="completed-message">
-                                        ✅ Bu zakaz bajarilgan
+                                        ✅ Bu buyurtma bajarilgan
                                     </div>
                                 )}
                             </div>
@@ -432,7 +432,7 @@ function Admin() {
             <div className="admin-stats">
                 <div className="stat-card">
                     <div className="stat-value">{stats.total}</div>
-                    <div className="stat-label">Jami zakazlar</div>
+                    <div className="stat-label">Jami buyurtmalar</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{stats.new}</div>
@@ -464,7 +464,7 @@ function Admin() {
                 {loading ? (
                     <div className="loading">Yuklanmoqda...</div>
                 ) : filteredOrders.length === 0 ? (
-                    <div className="empty">Zakazlar yo'q</div>
+                    <div className="empty">Buyurtmalar yo'q</div>
                 ) : (
                     filteredOrders.map((order) => (
                         <div 
@@ -474,7 +474,7 @@ function Admin() {
                         >
                             <div className="order-header">
                                 <div>
-                                    <strong>Zakaz #{order.orderId}</strong>
+                                    <strong>Buyurtma #{order.orderId}</strong>
                                     <p className="order-date">📅 {new Date(order.orderDate).toLocaleString()}</p>
                                     <p className="order-telegram">🤖 TG ID: {order.telegramId}</p>
                                 </div>

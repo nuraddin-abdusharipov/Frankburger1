@@ -151,7 +151,7 @@ function Profile() {
                             <div className="stat-icon">📦</div>
                             <div className="stat-info">
                                 <span className="stat-number">{ordersCount}</span>
-                                <span className="stat-label">ta zakaz</span>
+                                <span className="stat-label">ta buyurtma</span>
                             </div>
                         </div>
 
@@ -205,7 +205,7 @@ function Profile() {
                 </div>
 
                 <Link to="/orders" className="my-orders-btn">
-                    📋 Mening zakazlarim
+                    📋 Mening buyurtmalarim
                 </Link>
             </div>
         </div>

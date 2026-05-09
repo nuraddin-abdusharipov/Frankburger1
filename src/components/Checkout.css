@@ -4,6 +4,7 @@
     width: 100%;
     max-width: 400px;
     overflow: auto;
+    position: relative;
 }
 
 ::-webkit-scrollbar {
@@ -14,38 +15,62 @@
     padding: 15px 20px;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
     position: sticky;
     top: 0;
     z-index: 10;
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(10px);
 }
 
 .back-btn {
     text-decoration: none;
-    font-size: 18px;
-    color: white;
+    font-size: 14px;
+    color: #ff6b35;
+    background: rgba(255, 107, 53, 0.1);
+    padding: 8px 16px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
 }
 
 .checkout-header h1 {
     margin: 0;
     font-size: 18px;
+    color: white;
+    flex: 1;
+}
+
+.telegram-badge {
+    background: linear-gradient(135deg, #27ae60, #1e8449);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 25px;
+    font-size: 11px;
+    font-weight: 600;
 }
 
 .checkout-content {
     max-width: 600px;
     margin: 0 auto;
-    padding: 15px;
+    padding: 16px;
 }
 
 .form-section {
-    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
     padding: 20px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .form-section h2 {
-    margin: 0 0 15px 0;
+    margin: 0 0 18px 0;
     font-size: 18px;
+    font-weight: 600;
+    color: white;
+    border-left: 3px solid #ff6b35;
+    padding-left: 12px;
 }
 
 .form-row {
@@ -55,108 +80,129 @@
 
 .form-group {
     flex: 1;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-    color: #666;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #aaa;
+    font-weight: 500;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
     font-size: 14px;
-    box-sizing: border-box;
+    color: white;
+    transition: all 0.3s ease;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #e74c3c;
+    border-color: #ff6b35;
+    background: rgba(255, 107, 53, 0.1);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: rgba(255, 255, 255, 0.3);
 }
 
 .map-container {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
 }
 
 .map {
-    height: 300px;
-    border-radius: 12px;
-    margin-bottom: 10px;
+    height: 320px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .map-hint {
     font-size: 12px;
-    color: #999;
+    color: #888;
     text-align: center;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
 }
 
 .order-summary {
-    border-top: 1px solid #eee;
-    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 16px;
 }
 
 .order-item {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
+    padding: 10px 0;
     font-size: 14px;
-    color: white;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
 }
 
 .order-total {
     display: flex;
     justify-content: space-between;
-    padding: 15px 0 0;
+    padding: 16px 0 0;
     margin-top: 10px;
-    border-top: 1px solid #eee;
-    font-size: 18px;
+    font-size: 20px;
+    font-weight: 700;
 }
 
 .order-total strong:last-child {
-    color: #e74c3c;
+    background: linear-gradient(135deg, #ff6b35, #ff3b00);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .submit-btn {
     width: 100%;
     padding: 16px;
-    background: #e74c3c;
+    background: linear-gradient(135deg, #ff6b35, #ff3b00);
     color: white;
     border: none;
-    border-radius: 30px;
+    border-radius: 40px;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     margin-top: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
 }
 
-.submit-btn:hover {
-    background: #c0392b;
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(255, 107, 53, 0.5);
 }
 
-.telegram-badge {
-    background: #27ae60;
-    color: white;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: normal;
+.submit-btn:active:not(:disabled) {
+    transform: translateY(0);
 }
 
-.map-hint {
-    font-size: 12px;
-    text-align: center;
-    margin-top: 8px;
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .map-hint:has(✅) {
     color: #27ae60;
+}
+
+select option {
+    background: #1a1a2e;
+    color: white;
 }

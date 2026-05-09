@@ -162,7 +162,7 @@ function Orders() {
         return (
             <div className="OrdersPage">
                 <div className="orders-header">
-                    <Link to="/">← Orqaga</Link>
+                    <Link style={{textDecoration: "none"}} to="/">← Orqaga</Link>
                     <h2>Mening zakazlarim</h2>
                 </div>
                 <p style={{ textAlign: 'center', padding: '20px' }}>⏳ Yuklanmoqda...</p>

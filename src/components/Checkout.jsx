@@ -22,6 +22,7 @@ function Checkout() {
     const [mapLoaded, setMapLoaded] = useState(false)
     const mapRef = useRef(null)
     const markerRef = useRef(null)
+    const inputRefs = useRef({})
 
     const TELEGRAM_BOT_TOKEN = "8771407234:AAGculoSuCYdIhsG1uzgCKTY37HP608uXzo"
     const ADMIN_CHAT_ID = "7787131118"
@@ -39,7 +40,37 @@ function Checkout() {
                 lastName: tgUser.lastName || ''
             }))
         }
+
+        const handleClick = (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.expand()
+                }
+                e.target.focus()
+            }
+        }
+
+        document.addEventListener('click', handleClick)
+        
+        return () => {
+            document.removeEventListener('click', handleClick)
+        }
     }, [])
+
+    const handleInputFocus = (e) => {
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.expand()
+        }
+        
+        e.target.select()
+    }
+
+    const handleInputClick = (e) => {
+        e.stopPropagation()
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.expand()
+        }
+    }
 
     useEffect(() => {
         const savedCart = localStorage.getItem('cart')
@@ -171,6 +202,16 @@ function Checkout() {
                 }
                 .custom-marker:hover {
                     transform: scale(1.1);
+                }
+                /* Kompyuterda inputlarni yaxshiroq ko'rsatish uchun */
+                input, textarea, select {
+                    -webkit-user-select: text !important;
+                    user-select: text !important;
+                    cursor: text !important;
+                }
+                input:focus, textarea:focus, select:focus {
+                    outline: 2px solid #ff6b35;
+                    background-color: #fff;
                 }
             `
             document.head.appendChild(style)
@@ -381,7 +422,10 @@ function Checkout() {
                                     required
                                     value={formData.firstName}
                                     onChange={handleInputChange}
+                                    onFocus={handleInputFocus}
+                                    onClick={handleInputClick}
                                     placeholder="Ismingiz"
+                                    autoComplete="off"
                                 />
                             </div>
                             <div className="form-group">
@@ -392,7 +436,10 @@ function Checkout() {
                                     required
                                     value={formData.lastName}
                                     onChange={handleInputChange}
+                                    onFocus={handleInputFocus}
+                                    onClick={handleInputClick}
                                     placeholder="Familiyangiz"
+                                    autoComplete="off"
                                 />
                             </div>
                         </div>
@@ -404,7 +451,10 @@ function Checkout() {
                                 required
                                 value={formData.phone}
                                 onChange={handleInputChange}
+                                onFocus={handleInputFocus}
+                                onClick={handleInputClick}
                                 placeholder="+998 XX XXX XX XX"
+                                autoComplete="off"
                             />
                         </div>
                     </div>
@@ -424,7 +474,10 @@ function Checkout() {
                                 name="address"
                                 value={formData.address}
                                 onChange={handleInputChange}
+                                onFocus={handleInputFocus}
+                                onClick={handleInputClick}
                                 placeholder="Koordinatalar avtomatik to'ldiriladi!"
+                                readOnly
                             />
                         </div>
                     </div>
@@ -437,6 +490,8 @@ function Checkout() {
                                 required
                                 value={formData.deliveryTime}
                                 onChange={handleInputChange}
+                                onFocus={handleInputFocus}
+                                onClick={handleInputClick}
                             >
                                 <option value="">Vaqtni tanlang</option>
                                 {deliveryTimes.map(time => (
@@ -450,6 +505,8 @@ function Checkout() {
                                 name="notes"
                                 value={formData.notes}
                                 onChange={handleInputChange}
+                                onFocus={handleInputFocus}
+                                onClick={handleInputClick}
                                 placeholder="Maxsus talablar..."
                                 rows="3"
                             />
@@ -457,7 +514,7 @@ function Checkout() {
                     </div>
 
                     <div className="form-section">
-                        <h2>🛍️ Zakaz haqida</h2>
+                        <h2>🛍️ Buyurtma haqida haqida</h2>
                         <div className="order-summary">
                             {cart.map(item => (
                                 <div key={item.id} className="order-item">

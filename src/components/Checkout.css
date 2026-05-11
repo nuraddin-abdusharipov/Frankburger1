@@ -414,3 +414,30 @@ select option {
     color: #ff6b35;
     font-size: 20px;
 }
+
+input, textarea, select {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    cursor: text !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: 2px solid #ff6b35;
+    background-color: #fff;
+}
+
+body {
+    -webkit-tap-highlight-color: transparent;
+}
+
+form {
+    pointer-events: auto !important;
+}
+
+.form-group {
+    pointer-events: auto !important;
+}

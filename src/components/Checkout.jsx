@@ -63,23 +63,13 @@ function Checkout() {
         }
     }, [])
 
-    // Input o'zgarishlari - oddiy va to'g'ri
+    // Input o'zgarishlari
     const handleInputChange = (e) => {
         const { name, value } = e.target
         setFormData(prev => ({
             ...prev,
             [name]: value
         }))
-    }
-
-    // Input fokuslanganda hech qanday to'siq bo'lmasligi uchun
-    const handleInputFocus = (e) => {
-        // Hech narsa qilma - input normal ishlashi kerak
-    }
-
-    // Input bosilganda
-    const handleInputClick = (e) => {
-        e.stopPropagation()
     }
 
     // OSRM API orqali masofani hisoblash
@@ -527,8 +517,6 @@ function Checkout() {
                                     required
                                     value={formData.firstName}
                                     onChange={handleInputChange}
-                                    onFocus={handleInputFocus}
-                                    onClick={handleInputClick}
                                     placeholder="Ismingiz"
                                     autoComplete="off"
                                 />
@@ -541,8 +529,6 @@ function Checkout() {
                                     required
                                     value={formData.lastName}
                                     onChange={handleInputChange}
-                                    onFocus={handleInputFocus}
-                                    onClick={handleInputClick}
                                     placeholder="Familiyangiz"
                                     autoComplete="off"
                                 />
@@ -556,8 +542,6 @@ function Checkout() {
                                 required
                                 value={formData.phone}
                                 onChange={handleInputChange}
-                                onFocus={handleInputFocus}
-                                onClick={handleInputClick}
                                 placeholder="+998 XX XXX XX XX"
                                 autoComplete="off"
                             />
@@ -601,8 +585,6 @@ function Checkout() {
                                 required
                                 value={formData.deliveryTime}
                                 onChange={handleInputChange}
-                                onFocus={handleInputFocus}
-                                onClick={handleInputClick}
                             >
                                 <option value="">Vaqtni tanlang</option>
                                 {deliveryTimes.map(time => (
@@ -616,8 +598,6 @@ function Checkout() {
                                 name="notes"
                                 value={formData.notes}
                                 onChange={handleInputChange}
-                                onFocus={handleInputFocus}
-                                onClick={handleInputClick}
                                 placeholder="Maxsus talablar..."
                                 rows="3"
                             />

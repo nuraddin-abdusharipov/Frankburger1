@@ -533,4 +533,4 @@ function Orders() {
     )
 }
 
-export default Order
+export default Orders

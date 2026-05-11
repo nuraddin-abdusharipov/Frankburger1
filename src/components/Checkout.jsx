@@ -45,13 +45,15 @@ function Checkout() {
         // Telegram Web App ni kengaytirish
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.expand()
-            window.Telegram.WebApp.enableClosingConfirmation()
-            window.Telegram.WebApp.MainButton?.hide()
             
-            // Kompyuterda inputlar ishlashi uchun
-            const webApp = window.Telegram.WebApp
-            webApp.isExpanded = true
-            webApp.viewportStableHeight = window.innerHeight
+            // Closing confirmation faqat qo'llab-quvvatlansa
+            try {
+                window.Telegram.WebApp.enableClosingConfirmation()
+            } catch (e) {
+                console.log('Closing confirmation not supported in this version')
+            }
+            
+            window.Telegram.WebApp.MainButton?.hide()
         }
         
         const tgUser = getTelegramUser()
@@ -67,10 +69,9 @@ function Checkout() {
         }
     }, [])
 
-    // Inputlarni ishlatish uchun maxsus handler
+    // Input o'zgarishini qayta ishlash
     const handleInputChange = (e) => {
         const { name, value } = e.target
-        console.log("Input o'zgardi:", name, value)
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -82,44 +83,7 @@ function Checkout() {
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.expand()
         }
-        // Hech qanday qo'shimcha cheklov yo'q
     }
-
-    // Input bosilganda
-    const handleInputClick = (e) => {
-        e.stopPropagation()
-        if (window.Telegram?.WebApp) {
-            window.Telegram.WebApp.expand()
-        }
-    }
-
-    // Inputdan chiqqanda
-    const handleInputBlur = (e) => {
-        // Hech narsa qilma
-    }
-
-    // Mouse eventlarni to'g'rilash
-    useEffect(() => {
-        // Barcha inputlarni tanlash va ularga event listener qo'shish
-        const inputs = document.querySelectorAll('input, textarea, select')
-        
-        const preventTelegramBlock = (e) => {
-            e.stopPropagation()
-            return true
-        }
-        
-        inputs.forEach(input => {
-            input.addEventListener('mousedown', preventTelegramBlock)
-            input.addEventListener('mouseup', preventTelegramBlock)
-        })
-        
-        return () => {
-            inputs.forEach(input => {
-                input.removeEventListener('mousedown', preventTelegramBlock)
-                input.removeEventListener('mouseup', preventTelegramBlock)
-            })
-        }
-    }, [formData]) // formData o'zgarganda qayta ishlaydi
 
     // OSRM API orqali masofani hisoblash
     const calculateRoute = async (startLat, startLng, endLat, endLng) => {
@@ -337,6 +301,7 @@ function Checkout() {
                     
                     hapticFeedback()
                 } else {
+                    // To'g'ri chiziqli masofa (fallback)
                     const R = 6371
                     const dLat = (userLat - CAFE_LOCATION.lat) * Math.PI / 180
                     const dLng = (userLng - CAFE_LOCATION.lng) * Math.PI / 180
@@ -368,28 +333,13 @@ function Checkout() {
 
             const style = document.createElement('style')
             style.textContent = `
-                .user-marker:hover, .cafe-marker:hover {
-                    transform: scale(1.1);
-                }
                 input, textarea, select {
                     -webkit-user-select: text !important;
                     user-select: text !important;
                     cursor: text !important;
-                    pointer-events: auto !important;
                 }
                 input:focus, textarea:focus, select:focus {
                     outline: 2px solid #ff6b35;
-                    background-color: #fff;
-                }
-                .leaflet-container {
-                    cursor: crosshair !important;
-                }
-                /* Telegram Web App da inputlarni to'g'ri ishlashi uchun */
-                body {
-                    -webkit-tap-highlight-color: transparent;
-                }
-                input, textarea {
-                    touch-action: manipulation;
                 }
             `
             document.head.appendChild(style)
@@ -424,7 +374,6 @@ function Checkout() {
         message += `🚚 YETKAZIB BERISH: ${orderData.delivery.deliveryFee.toLocaleString()} so'm\n`
         message += `💵 JAMI: ${orderData.totalAmount.toLocaleString()} so'm\n`
         message += `🆔 Buyurtma ID: ${orderData.orderId}\n`
-        message += `📅 Vaqt: ${new Date(orderData.orderDate).toLocaleString()}`
 
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
         
@@ -456,8 +405,7 @@ function Checkout() {
         message += `📏 Masofa: ${orderData.delivery.distance.toFixed(2)} km\n`
         message += `⏰ Yetkazib berish: ${orderData.delivery.deliveryTime}\n`
         message += `📍 Manzil: ${orderData.delivery.address}\n\n`
-        message += `📦 Holatni "Buyurtmalar" bo'limidan kuzating.\n\n`
-        message += `☎️ Savollar: +998 XX XXX XX XX`
+        message += `📦 Holatni "Buyurtmalar" bo'limidan kuzating.`
 
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
         
@@ -575,7 +523,7 @@ function Checkout() {
         <div className="CheckoutPage">
             <div className="checkout-header">
                 <Link to="/cart" className="back-btn">← Orqaga</Link>
-                <h1>Buyurtmani rasmiylashtirish</h1>
+                <h1>Zakazni rasmiylashtirish</h1>
                 {telegramId && (
                     <div className="telegram-badge">
                         ID: {telegramId}
@@ -597,8 +545,6 @@ function Checkout() {
                                     value={formData.firstName}
                                     onChange={handleInputChange}
                                     onFocus={handleInputFocus}
-                                    onClick={handleInputClick}
-                                    onBlur={handleInputBlur}
                                     placeholder="Ismingiz"
                                     autoComplete="off"
                                 />
@@ -612,8 +558,6 @@ function Checkout() {
                                     value={formData.lastName}
                                     onChange={handleInputChange}
                                     onFocus={handleInputFocus}
-                                    onClick={handleInputClick}
-                                    onBlur={handleInputBlur}
                                     placeholder="Familiyangiz"
                                     autoComplete="off"
                                 />
@@ -628,8 +572,6 @@ function Checkout() {
                                 value={formData.phone}
                                 onChange={handleInputChange}
                                 onFocus={handleInputFocus}
-                                onClick={handleInputClick}
-                                onBlur={handleInputBlur}
                                 placeholder="+998 XX XXX XX XX"
                                 autoComplete="off"
                             />
@@ -655,6 +597,11 @@ function Checkout() {
                                             {deliveryFee > 0 ? `${deliveryFee.toLocaleString()} so'm` : 'Bepul'}
                                         </strong>
                                     </div>
+                                    {deliveryFee > 0 && (
+                                        <div className="fee-info">
+                                            💡 1 km gacha bepul, keyingi har bir km uchun +{DELIVERY_RATE_PER_KM.toLocaleString()} so'm
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -669,7 +616,6 @@ function Checkout() {
                                 value={formData.deliveryTime}
                                 onChange={handleInputChange}
                                 onFocus={handleInputFocus}
-                                onClick={handleInputClick}
                             >
                                 <option value="">Vaqtni tanlang</option>
                                 {deliveryTimes.map(time => (
@@ -684,7 +630,6 @@ function Checkout() {
                                 value={formData.notes}
                                 onChange={handleInputChange}
                                 onFocus={handleInputFocus}
-                                onClick={handleInputClick}
                                 placeholder="Maxsus talablar..."
                                 rows="3"
                             />

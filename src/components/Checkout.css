@@ -464,7 +464,3 @@ form, .form-group, .form-section {
 }
 
 /* Inputlar uchun z-index */
-input, textarea, select {
-    position: relative;
-    z-index: 10;
-}

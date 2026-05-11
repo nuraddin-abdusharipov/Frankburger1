@@ -379,3 +379,95 @@
     padding: 60px;
     color: #888;
 }
+
+/* Masofa va yetkazib berish narxi uchun stillar */
+.distance-value {
+    color: #ff6b35;
+    font-weight: 600;
+}
+
+.fee-amount {
+    color: #ff6b35;
+    font-weight: 700;
+}
+
+.free-delivery {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.detail-subtotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid #e9ecef;
+    margin-top: 10px;
+    color: #6c757d;
+}
+
+.detail-delivery-fee {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    color: #ff6b35;
+    border-bottom: 1px dashed #e9ecef;
+}
+
+.detail-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    margin-top: 10px;
+    border-top: 2px solid #ff6b35;
+    font-size: 18px;
+}
+
+/* Admin order cardda masofa va yetkazib berish narxi */
+.order-info p {
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+.order-total-preview {
+    text-align: right;
+}
+
+.total-amount {
+    font-size: 16px;
+    color: #ff6b35;
+}
+
+.delivery-fee-preview small {
+    color: #ff6b35;
+    font-size: 11px;
+}
+
+.free-delivery-preview small {
+    color: #28a745;
+    font-size: 11px;
+}
+
+/* Xarita uchun stillar */
+.order-map {
+    width: 100%;
+    height: 300px;
+    border-radius: 12px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.map-container {
+    margin-top: 10px;
+}
+
+/* Kafe markeri animatsiyasi */
+.cafe-marker {
+    transition: transform 0.2s ease;
+}
+
+.cafe-marker:hover {
+    transform: scale(1.1);
+}

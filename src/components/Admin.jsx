@@ -85,6 +85,39 @@ function Admin() {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
             
+            // Kafe joylashuvi (Frank Burger)
+            const cafeLocation = selectedOrder.delivery?.cafeLocation || { lat: 41.3783, lng: 60.3639, name: "Frank Burger" };
+            
+            // Kafe markeri
+            const cafeIcon = L.divIcon({
+                className: 'cafe-marker',
+                html: `
+                    <div style="
+                        background: #dc3545;
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border: 2px solid white;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+                    ">
+                        <span style="font-size: 24px;">🍔</span>
+                    </div>
+                `,
+                iconSize: [40, 40],
+                iconAnchor: [20, 40]
+            });
+            
+            L.marker([cafeLocation.lat, cafeLocation.lng], { icon: cafeIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <b>🍔 Frank Burger</b><br>
+                    📍 Kafe manzili
+                `);
+            
+            // Foydalanuvchi markeri
             L.marker([lat, lng]).addTo(map)
                 .bindPopup(`
                     <b>${selectedOrder.customer?.fullName}</b><br>
@@ -92,6 +125,21 @@ function Admin() {
                     📍 ${selectedOrder.delivery?.address}
                 `)
                 .openPopup();
+            
+            // Ikki nuqta orasidagi chiziq
+            L.polyline([
+                [cafeLocation.lat, cafeLocation.lng],
+                [lat, lng]
+            ], {
+                color: '#ff6b35',
+                weight: 3,
+                opacity: 0.7,
+                dashArray: '5, 10'
+            }).addTo(map);
+            
+            // Mapni ikkala nuqtani ko'rsatadigan qilib zoom qilish
+            const bounds = L.latLngBounds([[cafeLocation.lat, cafeLocation.lng], [lat, lng]]);
+            map.fitBounds(bounds, { padding: [50, 50] });
             
             mapInstanceRef.current = map;
         }
@@ -139,7 +187,15 @@ function Admin() {
     const sendStatusMessageToUser = async (orderData, newStatus) => {
         let message = `🍔 FRANK BURGER 🍔\n\n`
         message += `🆔 Buyurtma ID: ${orderData.orderId}\n`
-        message += `💰 Jami: ${orderData.totalAmount.toLocaleString()} so'm\n\n`
+        message += `💰 Mahsulotlar: ${orderData.productsAmount?.toLocaleString() || orderData.totalAmount?.toLocaleString()} so'm\n`
+        if (orderData.delivery?.deliveryFee > 0) {
+            message += `🚚 Yetkazib berish: ${orderData.delivery.deliveryFee.toLocaleString()} so'm\n`
+        }
+        message += `💵 Jami: ${orderData.totalAmount?.toLocaleString()} so'm\n`
+        if (orderData.delivery?.distance) {
+            message += `📏 Masofa: ${orderData.delivery.distance.toFixed(2)} km\n`
+        }
+        message += `\n`
         
         switch(newStatus) {
             case 'Tayyorlanmoqda':
@@ -308,6 +364,26 @@ function Admin() {
                             <span className="detail-label">Manzil:</span>
                             <span className="detail-value">{selectedOrder.delivery?.address}</span>
                         </div>
+                        {/* Masofa ma'lumoti qo'shildi */}
+                        {selectedOrder.delivery?.distance && (
+                            <div className="detail-row">
+                                <span className="detail-label">📏 Masofa:</span>
+                                <span className="detail-value distance-value">
+                                    {selectedOrder.delivery.distance.toFixed(2)} km
+                                </span>
+                            </div>
+                        )}
+                        {/* Yetkazib berish narxi qo'shildi */}
+                        {selectedOrder.delivery?.deliveryFee !== undefined && (
+                            <div className="detail-row">
+                                <span className="detail-label">🚚 Yetkazib berish narxi:</span>
+                                <span className={`detail-value ${selectedOrder.delivery.deliveryFee > 0 ? 'fee-amount' : 'free-delivery'}`}>
+                                    {selectedOrder.delivery.deliveryFee > 0 
+                                        ? `${selectedOrder.delivery.deliveryFee.toLocaleString()} so'm` 
+                                        : 'Bepul'}
+                                </span>
+                            </div>
+                        )}
                         {selectedOrder.delivery?.coordinates && (
                             <>
                                 <div className="detail-row">
@@ -349,8 +425,20 @@ function Admin() {
                                 </div>
                             ))}
                         </div>
+                        {/* Mahsulotlar summasi */}
+                        <div className="detail-subtotal">
+                            <span>Mahsulotlar summasi:</span>
+                            <span>{selectedOrder.productsAmount?.toLocaleString() || selectedOrder.totalAmount?.toLocaleString()} so'm</span>
+                        </div>
+                        {/* Yetkazib berish narxi (agar mavjud bo'lsa) */}
+                        {selectedOrder.delivery?.deliveryFee > 0 && (
+                            <div className="detail-delivery-fee">
+                                <span>Yetkazib berish:</span>
+                                <span>+ {selectedOrder.delivery.deliveryFee.toLocaleString()} so'm</span>
+                            </div>
+                        )}
                         <div className="detail-total">
-                            <strong>Jami:</strong>
+                            <strong>Jami to'lov:</strong>
                             <strong>{selectedOrder.totalAmount?.toLocaleString()} so'm</strong>
                         </div>
                     </div>
@@ -480,6 +568,10 @@ function Admin() {
                                     <p>📞 {order.customer?.phone}</p>
                                     <p>📍 {order.delivery?.address?.substring(0, 40)}...</p>
                                     <p>⏰ {order.delivery?.deliveryTime}</p>
+                                    {/* Masofa ko'rsatilgan */}
+                                    {order.delivery?.distance && (
+                                        <p>📏 {order.delivery.distance.toFixed(2)} km</p>
+                                    )}
                                 </div>
                                 
                                 <div className="order-items-preview">
@@ -490,7 +582,19 @@ function Admin() {
                                 </div>
                                 
                                 <div className="order-total-preview">
-                                    <strong>{order.totalAmount?.toLocaleString()} so'm</strong>
+                                    <div className="total-amount">
+                                        <strong>{order.totalAmount?.toLocaleString()} so'm</strong>
+                                    </div>
+                                    {order.delivery?.deliveryFee > 0 && (
+                                        <div className="delivery-fee-preview">
+                                            <small>🚚 +{order.delivery.deliveryFee.toLocaleString()} so'm</small>
+                                        </div>
+                                    )}
+                                    {order.delivery?.deliveryFee === 0 && order.delivery?.distance > 0 && (
+                                        <div className="free-delivery-preview">
+                                            <small>✅ Bepul yetkazib berish</small>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

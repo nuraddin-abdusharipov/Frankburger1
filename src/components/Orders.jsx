@@ -1,9 +1,11 @@
 import './Orders.css'
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
     ordersCollection,
     getDocs,
+    getDoc,
+    doc,
     query,
     where,
     orderBy,
@@ -12,7 +14,10 @@ import {
 } from '../firebase'
 
 function Orders() {
+    const navigate = useNavigate()
+    const { orderId } = useParams()
     const [orders, setOrders] = useState([])
+    const [selectedOrder, setSelectedOrder] = useState(null)
     const [loading, setLoading] = useState(true)
     const [telegramId, setTelegramId] = useState(null)
     const [lastDoc, setLastDoc] = useState(null)
@@ -33,11 +38,48 @@ function Orders() {
                 setTelegramId(user.id)
             } else {
                 console.log("Telegram user yo‘q, test uchun ID: 7787131118")
+                setTelegramId(7787131118) // Test ID
             }
         } else {
             console.log("Telegram yo‘q — test mode")
+            setTelegramId(7787131118) // Test ID
         }
     }, [])
+
+    // Agar orderId bo'lsa, bitta buyurtmani fetch qilish
+    useEffect(() => {
+        if (orderId && telegramId) {
+            fetchOrderDetail(orderId)
+        } else if (telegramId) {
+            fetchOrders()
+        }
+    }, [orderId, telegramId])
+
+    const fetchOrderDetail = async (id) => {
+        setLoading(true)
+        try {
+            const orderRef = doc(ordersCollection, id)
+            const orderSnap = await getDoc(orderRef)
+            if (orderSnap.exists()) {
+                const orderData = { id: orderSnap.id, ...orderSnap.data() }
+                // Faqat foydalanuvchining o'z buyurtmasini ko'rishiga ruxsat berish
+                if (orderData.telegramId === Number(telegramId)) {
+                    setSelectedOrder(orderData)
+                } else {
+                    alert("❌ Siz bu buyurtmani ko'rish huquqiga ega emassiz!")
+                    navigate('/orders')
+                }
+            } else {
+                alert("Buyurtma topilmadi!")
+                navigate('/orders')
+            }
+        } catch (error) {
+            console.error('Buyurtma detalini olishda xatolik:', error)
+            navigate('/orders')
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const fetchOrders = async (loadMore = false) => {
         if (!telegramId) return
@@ -51,6 +93,7 @@ function Orders() {
                 q = query(
                     ordersCollection,
                     where("telegramId", "==", Number(telegramId)),
+                    orderBy("orderDate", "desc"),
                     startAfter(lastDoc),
                     limit(ORDERS_PER_PAGE)
                 )
@@ -58,22 +101,17 @@ function Orders() {
                 q = query(
                     ordersCollection,
                     where("telegramId", "==", Number(telegramId)),
+                    orderBy("orderDate", "desc"),
                     limit(ORDERS_PER_PAGE)
                 )
             }
 
             const snapshot = await getDocs(q)
 
-            let data = snapshot.docs.map(doc => ({
+            const data = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }))
-
-            data = data.sort((a, b) => {
-                const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0)
-                const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0)
-                return dateB - dateA
-            })
 
             const lastVisible = snapshot.docs[snapshot.docs.length - 1]
 
@@ -88,19 +126,15 @@ function Orders() {
 
         } catch (err) {
             console.error("🔥 Firebase xatolik:", err)
+            // Fallback - barcha buyurtmalarni olish
             try {
-                const q = query(ordersCollection, limit(ORDERS_PER_PAGE))
+                const q = query(ordersCollection, orderBy("orderDate", "desc"), limit(ORDERS_PER_PAGE * 2))
                 const snapshot = await getDocs(q)
                 let allOrders = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }))
                 allOrders = allOrders.filter(order => order.telegramId === Number(telegramId))
-                allOrders = allOrders.sort((a, b) => {
-                    const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0)
-                    const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0)
-                    return dateB - dateA
-                })
                 setOrders(allOrders)
                 setHasMore(false)
             } catch (err2) {
@@ -111,16 +145,19 @@ function Orders() {
         setLoading(false)
     }
 
-    useEffect(() => {
-        if (telegramId) {
-            fetchOrders()
-        }
-    }, [telegramId])
-
     const loadMore = () => {
         if (!loading && hasMore) {
             fetchOrders(true)
         }
+    }
+
+    const goToOrderDetail = (orderId) => {
+        navigate(`/orders/${orderId}`)
+    }
+
+    const goBack = () => {
+        navigate('/orders')
+        setSelectedOrder(null)
     }
 
     const getStatus = (status) => {
@@ -133,6 +170,16 @@ function Orders() {
         }
     }
 
+    const getStatusColor = (status) => {
+        switch(status) {
+            case 'Yangi': return 'status-new'
+            case 'Tayyorlanmoqda': return 'status-preparing'
+            case 'Yetkazilmoqda': return 'status-delivering'
+            case 'Bajarilgan': return 'status-completed'
+            default: return 'status-new'
+        }
+    }
+
     const formatDate = (timestamp) => {
         if (!timestamp) return "Sana yo‘q"
         if (timestamp.toDate) {
@@ -141,14 +188,136 @@ function Orders() {
         if (timestamp.seconds) {
             return new Date(timestamp.seconds * 1000).toLocaleString('uz-UZ')
         }
+        if (typeof timestamp === 'string') {
+            return new Date(timestamp).toLocaleString('uz-UZ')
+        }
         return "Sana yo‘q"
     }
 
+    // Buyurtma detali sahifasi
+    if (orderId && selectedOrder) {
+        return (
+            <div className="OrdersPage">
+                <div className="orders-header">
+                    <button onClick={goBack} className="back-btn">
+                        ← Orqaga
+                    </button>
+                    <h2>Buyurtma #{selectedOrder.orderId || selectedOrder.id.slice(-6)}</h2>
+                </div>
+
+                <div className="order-detail-page">
+                    <div className="detail-section">
+                        <h3>📋 Buyurtma ma'lumotlari</h3>
+                        <div className="detail-row">
+                            <span className="detail-label">Holati:</span>
+                            <span className={`status-badge-detail ${getStatusColor(selectedOrder.status)}`}>
+                                {getStatus(selectedOrder.status)}
+                            </span>
+                        </div>
+                        <div className="detail-row">
+                            <span className="detail-label">Buyurtma vaqti:</span>
+                            <span className="detail-value">{formatDate(selectedOrder.createdAt || selectedOrder.orderDate)}</span>
+                        </div>
+                        {selectedOrder.delivery?.deliveryTime && (
+                            <div className="detail-row">
+                                <span className="detail-label">Yetkazib berish vaqti:</span>
+                                <span className="detail-value">{selectedOrder.delivery.deliveryTime}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="detail-section">
+                        <h3>📍 Yetkazib berish manzili</h3>
+                        <div className="detail-row">
+                            <span className="detail-label">Manzil:</span>
+                            <span className="detail-value">{selectedOrder.delivery?.address || "Manzil yo'q"}</span>
+                        </div>
+                        {selectedOrder.delivery?.distance && (
+                            <div className="detail-row">
+                                <span className="detail-label">📏 Masofa:</span>
+                                <span className="detail-value distance-value">
+                                    {selectedOrder.delivery.distance.toFixed(2)} km
+                                </span>
+                            </div>
+                        )}
+                        {selectedOrder.delivery?.deliveryFee !== undefined && (
+                            <div className="detail-row">
+                                <span className="detail-label">🚚 Yetkazib berish:</span>
+                                <span className={`detail-value ${selectedOrder.delivery.deliveryFee > 0 ? 'fee-amount' : 'free-delivery'}`}>
+                                    {selectedOrder.delivery.deliveryFee > 0 
+                                        ? `${selectedOrder.delivery.deliveryFee.toLocaleString()} so'm` 
+                                        : 'Bepul'}
+                                </span>
+                            </div>
+                        )}
+                        {selectedOrder.delivery?.notes && (
+                            <div className="detail-row">
+                                <span className="detail-label">Qo'shimcha izoh:</span>
+                                <span className="detail-value">{selectedOrder.delivery.notes}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="detail-section">
+                        <h3>🛍️ Mahsulotlar</h3>
+                        <div className="items-list-detail">
+                            {selectedOrder.items?.map((item, idx) => (
+                                <div key={idx} className="detail-item">
+                                    <div className="item-info">
+                                        <span className="item-name">{item.name}</span>
+                                        <span className="item-quantity">x{item.quantity}</span>
+                                    </div>
+                                    <span className="item-price">{item.total.toLocaleString()} so'm</span>
+                                </div>
+                            ))}
+                        </div>
+                        
+                        <div className="price-breakdown">
+                            <div className="subtotal-row">
+                                <span>Mahsulotlar summasi:</span>
+                                <span>{selectedOrder.productsAmount?.toLocaleString() || selectedOrder.totalAmount?.toLocaleString()} so'm</span>
+                            </div>
+                            {selectedOrder.delivery?.deliveryFee > 0 && (
+                                <div className="delivery-row-detail">
+                                    <span>Yetkazib berish:</span>
+                                    <span>+ {selectedOrder.delivery.deliveryFee.toLocaleString()} so'm</span>
+                                </div>
+                            )}
+                            <div className="total-row">
+                                <strong>Jami to'lov:</strong>
+                                <strong className="total-amount-detail">{selectedOrder.totalAmount?.toLocaleString()} so'm</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    {selectedOrder.delivery?.coordinates && (
+                        <div className="detail-section">
+                            <h3>🗺️ Manzil xaritada</h3>
+                            <div className="coordinates-info">
+                                <p>Latitude: {selectedOrder.delivery.coordinates.lat.toFixed(6)}</p>
+                                <p>Longitude: {selectedOrder.delivery.coordinates.lng.toFixed(6)}</p>
+                            </div>
+                            <a 
+                                href={`https://www.google.com/maps?q=${selectedOrder.delivery.coordinates.lat},${selectedOrder.delivery.coordinates.lng}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="map-link"
+                            >
+                                🗺️ Google Maps da ochish
+                            </a>
+                        </div>
+                    )}
+                </div>
+            </div>
+        )
+    }
+
+    // Buyurtmalar ro'yxati sahifasi
     if (!telegramId) {
         return (
             <div className="OrdersPage">
                 <div className="orders-header">
-                    <Link style={{textDecoration: "none"}} to="/">← Orqaga</Link>
+                    <Link to="/" className="back-link">← Orqaga</Link>
                     <h2>Mening buyurtmalarim</h2>
                 </div>
                 <p style={{ textAlign: 'center', padding: '20px' }}>⏳ Yuklanmoqda...</p>
@@ -160,7 +329,7 @@ function Orders() {
         return (
             <div className="OrdersPage">
                 <div className="orders-header">
-                    <Link to="/">← Orqaga</Link>
+                    <Link to="/" className="back-link">← Orqaga</Link>
                     <h2>Mening buyurtmalarim</h2>
                 </div>
                 <p style={{ textAlign: 'center', padding: '20px' }}>⏳ Buyurtmalar yuklanmoqda...</p>
@@ -170,7 +339,6 @@ function Orders() {
 
     return (
         <div className="OrdersPage">
-
             <div className="orders-header">
                 <Link to="/" className="back-link">← Orqaga</Link>
                 <h2>📦 Mening buyurtmalarim</h2>
@@ -186,8 +354,11 @@ function Orders() {
                 <>
                     <div className="orders-list">
                         {orders.map(order => (
-                            <div key={order.id} className="order-card">
-
+                            <div 
+                                key={order.id} 
+                                className="order-card"
+                                onClick={() => goToOrderDetail(order.id)}
+                            >
                                 <div className="order-header">
                                     <strong className="order-number">Buyurtma #{order.orderId || order.id.slice(-6)}</strong>
                                     <span className={`order-status status-${order.status?.toLowerCase() || 'yangi'}`}>
@@ -197,7 +368,7 @@ function Orders() {
 
                                 <div className="order-info">
                                     <p className="order-date">
-                                        📅 {formatDate(order.createdAt)}
+                                        📅 {formatDate(order.createdAt || order.orderDate)}
                                     </p>
 
                                     <p className="order-address">
@@ -210,9 +381,31 @@ function Orders() {
                                         }
                                     </p>
 
-                                    <p className="order-total">
-                                        💰Narxi <strong>{order.totalAmount?.toLocaleString() || 0} so'm</strong>
-                                    </p>
+                                    {/* Masofa va yetkazib berish narxi qo'shildi */}
+                                    {order.delivery?.distance && (
+                                        <p className="order-distance">
+                                            📏 {order.delivery.distance.toFixed(2)} km
+                                        </p>
+                                    )}
+
+                                    <div className="order-price-info">
+                                        <p className="order-total">
+                                            💰 Mahsulotlar: <strong>{(order.productsAmount || order.totalAmount)?.toLocaleString() || 0} so'm</strong>
+                                        </p>
+                                        {order.delivery?.deliveryFee > 0 && (
+                                            <p className="order-delivery-fee">
+                                                🚚 Yetkazib berish: <strong>{order.delivery.deliveryFee.toLocaleString()} so'm</strong>
+                                            </p>
+                                        )}
+                                        {order.delivery?.deliveryFee === 0 && order.delivery?.distance > 0 && (
+                                            <p className="order-free-delivery">
+                                                ✅ Yetkazib berish bepul
+                                            </p>
+                                        )}
+                                        <p className="order-total-amount">
+                                            💵 Jami: <strong>{(order.totalAmount)?.toLocaleString() || 0} so'm</strong>
+                                        </p>
+                                    </div>
                                 </div>
 
                                 <div className="order-items">
@@ -233,6 +426,9 @@ function Orders() {
                                     </div>
                                 )}
 
+                                <div className="order-detail-link">
+                                    <span>Batafsil →</span>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -248,7 +444,6 @@ function Orders() {
                     )}
                 </>
             )}
-
         </div>
     )
 }

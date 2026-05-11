@@ -34,6 +34,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/order/:orderId" element={<Admin />} />
+        <Route path="/orders/:orderId" element={<Orders />} />
       </Routes>
       <Footer />
     </div>

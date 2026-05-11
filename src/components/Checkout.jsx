@@ -30,7 +30,6 @@ function Checkout() {
     const TELEGRAM_BOT_TOKEN = "8771407234:AAGculoSuCYdIhsG1uzgCKTY37HP608uXzo"
     const ADMIN_CHAT_ID = "7787131118"
     
-    // Kafe joylashuvi (Frank Burger)
     const CAFE_LOCATION = {
         lat: 41.3783,
         lng: 60.3639,
@@ -40,7 +39,7 @@ function Checkout() {
     const DELIVERY_RATE_PER_KM = 500
     const FREE_DELIVERY_DISTANCE = 1
 
-    // Telegram Web App ni to'g'ri ishga tushirish
+    // Telegram Web App ni ishga tushirish
     useEffect(() => {
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.expand()
@@ -49,7 +48,6 @@ function Checkout() {
             } catch (e) {
                 console.log('Closing confirmation not supported')
             }
-            window.Telegram.WebApp.MainButton?.hide()
         }
         
         const tgUser = getTelegramUser()
@@ -65,6 +63,7 @@ function Checkout() {
         }
     }, [])
 
+    // Input o'zgarishlari - oddiy va to'g'ri
     const handleInputChange = (e) => {
         const { name, value } = e.target
         setFormData(prev => ({
@@ -73,10 +72,14 @@ function Checkout() {
         }))
     }
 
+    // Input fokuslanganda hech qanday to'siq bo'lmasligi uchun
     const handleInputFocus = (e) => {
-        if (window.Telegram?.WebApp) {
-            window.Telegram.WebApp.expand()
-        }
+        // Hech narsa qilma - input normal ishlashi kerak
+    }
+
+    // Input bosilganda
+    const handleInputClick = (e) => {
+        e.stopPropagation()
     }
 
     // OSRM API orqali masofani hisoblash
@@ -324,19 +327,6 @@ function Checkout() {
                 }
             })
 
-            const style = document.createElement('style')
-            style.textContent = `
-                input, textarea, select {
-                    -webkit-user-select: text !important;
-                    user-select: text !important;
-                    cursor: text !important;
-                }
-                input:focus, textarea:focus, select:focus {
-                    outline: 2px solid #ff6b35;
-                }
-            `
-            document.head.appendChild(style)
-
             return () => {
                 if (mapRef.current) {
                     mapRef.current.remove()
@@ -538,6 +528,7 @@ function Checkout() {
                                     value={formData.firstName}
                                     onChange={handleInputChange}
                                     onFocus={handleInputFocus}
+                                    onClick={handleInputClick}
                                     placeholder="Ismingiz"
                                     autoComplete="off"
                                 />
@@ -551,6 +542,7 @@ function Checkout() {
                                     value={formData.lastName}
                                     onChange={handleInputChange}
                                     onFocus={handleInputFocus}
+                                    onClick={handleInputClick}
                                     placeholder="Familiyangiz"
                                     autoComplete="off"
                                 />
@@ -565,6 +557,7 @@ function Checkout() {
                                 value={formData.phone}
                                 onChange={handleInputChange}
                                 onFocus={handleInputFocus}
+                                onClick={handleInputClick}
                                 placeholder="+998 XX XXX XX XX"
                                 autoComplete="off"
                             />
@@ -609,6 +602,7 @@ function Checkout() {
                                 value={formData.deliveryTime}
                                 onChange={handleInputChange}
                                 onFocus={handleInputFocus}
+                                onClick={handleInputClick}
                             >
                                 <option value="">Vaqtni tanlang</option>
                                 {deliveryTimes.map(time => (
@@ -623,6 +617,7 @@ function Checkout() {
                                 value={formData.notes}
                                 onChange={handleInputChange}
                                 onFocus={handleInputFocus}
+                                onClick={handleInputClick}
                                 placeholder="Maxsus talablar..."
                                 rows="3"
                             />
@@ -639,7 +634,6 @@ function Checkout() {
                                 </div>
                             ))}
                             
-                            {/* Masofa va yetkazib berish narxi qo'shildi */}
                             {distance && (
                                 <div className="order-delivery-info">
                                     <div className="delivery-distance-row">
@@ -657,11 +651,6 @@ function Checkout() {
                                             <small>
                                                 ({distance.toFixed(2)} km - 1 km) × {DELIVERY_RATE_PER_KM.toLocaleString()} so'm = {deliveryFee.toLocaleString()} so'm
                                             </small>
-                                        </div>
-                                    )}
-                                    {deliveryFee === 0 && distance <= FREE_DELIVERY_DISTANCE && (
-                                        <div className="free-delivery-note">
-                                            <small>✅ {distance.toFixed(2)} km masofa uchun yetkazib berish bepul (1 km gacha)</small>
                                         </div>
                                     )}
                                 </div>

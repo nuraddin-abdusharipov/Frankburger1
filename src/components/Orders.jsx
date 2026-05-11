@@ -1,5 +1,5 @@
 import './Orders.css'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
     ordersCollection,
@@ -22,8 +22,115 @@ function Orders() {
     const [telegramId, setTelegramId] = useState(null)
     const [lastDoc, setLastDoc] = useState(null)
     const [hasMore, setHasMore] = useState(true)
+    const [leafletLoaded, setLeafletLoaded] = useState(false)
+    const mapRef = useRef(null)
+    const mapInstanceRef = useRef(null)
 
     const ORDERS_PER_PAGE = 10
+
+    // Leaflet ni yuklash
+    useEffect(() => {
+        // CSS yuklash
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+        document.head.appendChild(link)
+
+        // JS yuklash
+        const script = document.createElement('script')
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+        script.onload = () => {
+            setLeafletLoaded(true)
+        }
+        script.onerror = () => {
+            console.error('Leaflet yuklanmadi')
+        }
+        document.head.appendChild(script)
+
+        return () => {
+            if (link.parentNode) document.head.removeChild(link)
+            if (script.parentNode) document.head.removeChild(script)
+        }
+    }, [])
+
+    // Xaritani ko'rsatish - faqat xarita qismi
+    useEffect(() => {
+        if (selectedOrder && selectedOrder.delivery?.coordinates && leafletLoaded && window.L && mapRef.current) {
+            // Eski xaritani tozalash
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.remove()
+                mapInstanceRef.current = null
+            }
+
+            const L = window.L
+            const { lat, lng } = selectedOrder.delivery.coordinates
+            const cafeLocation = selectedOrder.delivery?.cafeLocation || { lat: 41.3783, lng: 60.3639 }
+            
+            // Xaritani yaratish
+            const map = L.map(mapRef.current).setView([lat, lng], 13)
+            
+            // Xarita asosiy qatlami
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map)
+            
+            // Kafe markeri
+            const cafeIcon = L.icon({
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
+            })
+            
+            // Foydalanuvchi markeri (qizil rangda)
+            const userIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
+            })
+            
+            // Kafe markeri qo'shish
+            L.marker([cafeLocation.lat, cafeLocation.lng], { icon: cafeIcon })
+                .addTo(map)
+                .bindPopup('<b>🍔 Frank Burger</b><br/>Kafe manzili')
+            
+            // Foydalanuvchi markeri qo'shish
+            L.marker([lat, lng], { icon: userIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <b>${selectedOrder.customer?.fullName || 'Mijoz'}</b><br/>
+                    📞 ${selectedOrder.customer?.phone || 'Telefon yoq'}<br/>
+                    📍 ${selectedOrder.delivery?.address?.substring(0, 50) || 'Manzil'}
+                `)
+                .openPopup()
+            
+            // Ikki nuqta orasidagi chiziq
+            L.polyline([
+                [cafeLocation.lat, cafeLocation.lng],
+                [lat, lng]
+            ], {
+                color: '#ff6b35',
+                weight: 3,
+                opacity: 0.7
+            }).addTo(map)
+            
+            // Ikkala nuqtani ko'rsatish
+            const bounds = L.latLngBounds([[cafeLocation.lat, cafeLocation.lng], [lat, lng]])
+            map.fitBounds(bounds, { padding: [30, 30] })
+            
+            mapInstanceRef.current = map
+        }
+        
+        return () => {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.remove()
+                mapInstanceRef.current = null
+            }
+        }
+    }, [selectedOrder, leafletLoaded])
 
     useEffect(() => {
         const tg = window.Telegram?.WebApp
@@ -37,16 +144,13 @@ function Orders() {
             if (user?.id) {
                 setTelegramId(user.id)
             } else {
-                console.log("Telegram user yo‘q, test uchun ID: 7787131118")
-                setTelegramId(7787131118) // Test ID
+                setTelegramId(7787131118)
             }
         } else {
-            console.log("Telegram yo‘q — test mode")
-            setTelegramId(7787131118) // Test ID
+            setTelegramId(7787131118)
         }
     }, [])
 
-    // Agar orderId bo'lsa, bitta buyurtmani fetch qilish
     useEffect(() => {
         if (orderId && telegramId) {
             fetchOrderDetail(orderId)
@@ -62,7 +166,6 @@ function Orders() {
             const orderSnap = await getDoc(orderRef)
             if (orderSnap.exists()) {
                 const orderData = { id: orderSnap.id, ...orderSnap.data() }
-                // Faqat foydalanuvchining o'z buyurtmasini ko'rishiga ruxsat berish
                 if (orderData.telegramId === Number(telegramId)) {
                     setSelectedOrder(orderData)
                 } else {
@@ -74,7 +177,7 @@ function Orders() {
                 navigate('/orders')
             }
         } catch (error) {
-            console.error('Buyurtma detalini olishda xatolik:', error)
+            console.error('Xatolik:', error)
             navigate('/orders')
         } finally {
             setLoading(false)
@@ -107,12 +210,7 @@ function Orders() {
             }
 
             const snapshot = await getDocs(q)
-
-            const data = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }))
-
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
             const lastVisible = snapshot.docs[snapshot.docs.length - 1]
 
             setLastDoc(lastVisible)
@@ -123,23 +221,8 @@ function Orders() {
             } else {
                 setOrders(data)
             }
-
         } catch (err) {
-            console.error("🔥 Firebase xatolik:", err)
-            // Fallback - barcha buyurtmalarni olish
-            try {
-                const q = query(ordersCollection, orderBy("orderDate", "desc"), limit(ORDERS_PER_PAGE * 2))
-                const snapshot = await getDocs(q)
-                let allOrders = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }))
-                allOrders = allOrders.filter(order => order.telegramId === Number(telegramId))
-                setOrders(allOrders)
-                setHasMore(false)
-            } catch (err2) {
-                console.error("Yana xatolik:", err2)
-            }
+            console.error("Xatolik:", err)
         }
 
         setLoading(false)
@@ -258,6 +341,32 @@ function Orders() {
                         )}
                     </div>
 
+                    {/* Xarita qismi - TO'G'RILANGAN */}
+                    {selectedOrder.delivery?.coordinates && (
+                        <div className="detail-section">
+                            <h3>🗺️ Manzil xaritada</h3>
+                            <div className="coordinates-info">
+                                <p>Latitude: {selectedOrder.delivery.coordinates.lat.toFixed(6)}</p>
+                                <p>Longitude: {selectedOrder.delivery.coordinates.lng.toFixed(6)}</p>
+                            </div>
+                            {/* Xarita shu divga yuklanadi */}
+                            <div 
+                                ref={mapRef} 
+                                className="order-map-container"
+                                style={{ width: '100%', height: '300px', borderRadius: '12px', overflow: 'hidden', margin: '10px 0' }}
+                            ></div>
+                            <a 
+                                href={`https://www.google.com/maps?q=${selectedOrder.delivery.coordinates.lat},${selectedOrder.delivery.coordinates.lng}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="map-link"
+                                style={{ display: 'inline-block', marginTop: '10px', color: '#4285f4', textDecoration: 'none' }}
+                            >
+                                🗺️ Google Maps da ochish
+                            </a>
+                        </div>
+                    )}
+
                     <div className="detail-section">
                         <h3>🛍️ Mahsulotlar</h3>
                         <div className="items-list-detail">
@@ -289,24 +398,6 @@ function Orders() {
                             </div>
                         </div>
                     </div>
-
-                    {selectedOrder.delivery?.coordinates && (
-                        <div className="detail-section">
-                            <h3>🗺️ Manzil xaritada</h3>
-                            <div className="coordinates-info">
-                                <p>Latitude: {selectedOrder.delivery.coordinates.lat.toFixed(6)}</p>
-                                <p>Longitude: {selectedOrder.delivery.coordinates.lng.toFixed(6)}</p>
-                            </div>
-                            <a 
-                                href={`https://www.google.com/maps?q=${selectedOrder.delivery.coordinates.lat},${selectedOrder.delivery.coordinates.lng}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="map-link"
-                            >
-                                🗺️ Google Maps da ochish
-                            </a>
-                        </div>
-                    )}
                 </div>
             </div>
         )
@@ -381,7 +472,6 @@ function Orders() {
                                         }
                                     </p>
 
-                                    {/* Masofa va yetkazib berish narxi qo'shildi */}
                                     {order.delivery?.distance && (
                                         <p className="order-distance">
                                             📏 {order.delivery.distance.toFixed(2)} km
@@ -395,11 +485,6 @@ function Orders() {
                                         {order.delivery?.deliveryFee > 0 && (
                                             <p className="order-delivery-fee">
                                                 🚚 Yetkazib berish: <strong>{order.delivery.deliveryFee.toLocaleString()} so'm</strong>
-                                            </p>
-                                        )}
-                                        {order.delivery?.deliveryFee === 0 && order.delivery?.distance > 0 && (
-                                            <p className="order-free-delivery">
-                                                ✅ Yetkazib berish bepul
                                             </p>
                                         )}
                                         <p className="order-total-amount">
@@ -448,4 +533,4 @@ function Orders() {
     )
 }
 
-export default Orders
+export default Order

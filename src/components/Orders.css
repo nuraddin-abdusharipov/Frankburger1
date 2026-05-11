@@ -392,11 +392,11 @@
 
 .item-name {
     font-weight: 500;
-    color: #333;
+    color: white;
 }
 
 .item-quantity {
-    color: #666;
+    color: white;
     font-size: 13px;
 }
 
@@ -418,7 +418,7 @@
     justify-content: space-between;
     padding: 6px 0;
     font-size: 14px;
-    color: #666;
+    color: white;
 }
 
 .delivery-row-detail {

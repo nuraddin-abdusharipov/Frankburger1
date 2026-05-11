@@ -37,11 +37,23 @@ function Checkout() {
         name: "Frank Burger"
     }
     
-    const DELIVERY_RATE_PER_KM = 500 // 1 km uchun 500 so'm
-    const FREE_DELIVERY_DISTANCE = 1 // 1 km gacha bepul
+    const DELIVERY_RATE_PER_KM = 500
+    const FREE_DELIVERY_DISTANCE = 1
 
+    // Telegram Web App ni to'g'ri ishga tushirish
     useEffect(() => {
-        expandTelegramApp()
+        // Telegram Web App ni kengaytirish
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.expand()
+            window.Telegram.WebApp.enableClosingConfirmation()
+            window.Telegram.WebApp.MainButton?.hide()
+            
+            // Kompyuterda inputlar ishlashi uchun
+            const webApp = window.Telegram.WebApp
+            webApp.isExpanded = true
+            webApp.viewportStableHeight = window.innerHeight
+        }
+        
         const tgUser = getTelegramUser()
         
         if (tgUser && tgUser.id) {
@@ -53,30 +65,27 @@ function Checkout() {
                 lastName: tgUser.lastName || ''
             }))
         }
-
-        const handleClick = (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-                if (window.Telegram?.WebApp) {
-                    window.Telegram.WebApp.expand()
-                }
-                e.target.focus()
-            }
-        }
-
-        document.addEventListener('click', handleClick)
-        
-        return () => {
-            document.removeEventListener('click', handleClick)
-        }
     }, [])
 
+    // Inputlarni ishlatish uchun maxsus handler
+    const handleInputChange = (e) => {
+        const { name, value } = e.target
+        console.log("Input o'zgardi:", name, value)
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }))
+    }
+
+    // Input fokuslanganda
     const handleInputFocus = (e) => {
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.expand()
         }
-        e.target.select()
+        // Hech qanday qo'shimcha cheklov yo'q
     }
 
+    // Input bosilganda
     const handleInputClick = (e) => {
         e.stopPropagation()
         if (window.Telegram?.WebApp) {
@@ -84,7 +93,35 @@ function Checkout() {
         }
     }
 
-    // OSRM API orqali masofani hisoblash (avtomobil yo'li bilan)
+    // Inputdan chiqqanda
+    const handleInputBlur = (e) => {
+        // Hech narsa qilma
+    }
+
+    // Mouse eventlarni to'g'rilash
+    useEffect(() => {
+        // Barcha inputlarni tanlash va ularga event listener qo'shish
+        const inputs = document.querySelectorAll('input, textarea, select')
+        
+        const preventTelegramBlock = (e) => {
+            e.stopPropagation()
+            return true
+        }
+        
+        inputs.forEach(input => {
+            input.addEventListener('mousedown', preventTelegramBlock)
+            input.addEventListener('mouseup', preventTelegramBlock)
+        })
+        
+        return () => {
+            inputs.forEach(input => {
+                input.removeEventListener('mousedown', preventTelegramBlock)
+                input.removeEventListener('mouseup', preventTelegramBlock)
+            })
+        }
+    }, [formData]) // formData o'zgarganda qayta ishlaydi
+
+    // OSRM API orqali masofani hisoblash
     const calculateRoute = async (startLat, startLng, endLat, endLng) => {
         try {
             const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`
@@ -95,8 +132,6 @@ function Checkout() {
                 const route = data.routes[0]
                 const distanceInMeters = route.distance
                 const distanceInKm = distanceInMeters / 1000
-                
-                // Yo'l nuqtalarini olish (koordinatalarni [lat, lng] formatiga o'tkazish)
                 const coordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]])
                 
                 return {
@@ -112,7 +147,6 @@ function Checkout() {
         }
     }
 
-    // Masofa asosida yetkazib berish narxini hisoblash
     const calculateDeliveryFee = (distanceInKm) => {
         if (distanceInKm <= FREE_DELIVERY_DISTANCE) {
             return 0
@@ -121,16 +155,13 @@ function Checkout() {
         return Math.ceil(extraDistance * DELIVERY_RATE_PER_KM)
     }
 
-    // Xaritada uzluksiz yo'lni chizish
     const drawRoute = (coordinates) => {
         if (!mapRef.current || !window.L) return
         
-        // Eski route ni o'chirish
         if (routeLayerRef.current) {
             routeLayerRef.current.remove()
         }
         
-        // Yangi route ni uzluksiz chiziq bilan chizish
         routeLayerRef.current = window.L.polyline(coordinates, {
             color: '#ff6b35',
             weight: 5,
@@ -139,7 +170,6 @@ function Checkout() {
             lineCap: 'round'
         }).addTo(mapRef.current)
         
-        // Route ni ko'rsatish uchun mapni moslashtirish
         const bounds = routeLayerRef.current.getBounds()
         if (bounds.isValid()) {
             mapRef.current.fitBounds(bounds, {
@@ -178,7 +208,6 @@ function Checkout() {
             }).addTo(map)
             mapRef.current = map
 
-            // Kafe markeri (qizil rangda)
             const cafeIcon = window.L.divIcon({
                 className: 'cafe-marker',
                 html: `
@@ -194,7 +223,6 @@ function Checkout() {
                         align-items: center;
                         justify-content: center;
                         cursor: pointer;
-                        transition: transform 0.2s ease;
                     ">
                         <span style="font-size: 28px;">🍔</span>
                         <div style="
@@ -215,27 +243,18 @@ function Checkout() {
                 popupAnchor: [0, -50]
             })
 
-            // Kafe markerini qo'shish
             cafeMarkerRef.current = window.L.marker([CAFE_LOCATION.lat, CAFE_LOCATION.lng], {
                 icon: cafeIcon,
                 riseOnHover: true
             }).addTo(map)
             
             cafeMarkerRef.current.bindPopup(`
-                <div style="
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    padding: 10px;
-                    text-align: center;
-                    font-weight: bold;
-                    min-width: 150px;
-                ">
+                <div style="font-family: 'Segoe UI', sans-serif; padding: 10px; text-align: center;">
                     🍔 <strong>${CAFE_LOCATION.name}</strong><br/>
-                    📍 Bizning manzil<br/>
-                    <small style="color: #6c757d;">Yetkazib berish boshlanadigan joy</small>
+                    📍 Bizning manzil
                 </div>
             `)
 
-            // Foydalanuvchi markeri uchun icon (to'q sariq)
             const userIcon = window.L.divIcon({
                 className: 'user-marker',
                 html: `
@@ -251,15 +270,8 @@ function Checkout() {
                         align-items: center;
                         justify-content: center;
                         cursor: pointer;
-                        transition: all 0.3s ease;
                     ">
-                        <div style="
-                            width: 14px;
-                            height: 14px;
-                            background: white;
-                            border-radius: 50%;
-                            box-shadow: 0 0 5px rgba(0,0,0,0.2);
-                        "></div>
+                        <div style="width: 12px; height: 12px; background: white; border-radius: 50%;"></div>
                         <div style="
                             position: absolute;
                             bottom: -12px;
@@ -279,7 +291,6 @@ function Checkout() {
             })
 
             map.on('click', async (e) => {
-                // Avvalgi markerni o'chirish
                 if (markerRef.current) {
                     markerRef.current.remove()
                 }
@@ -287,21 +298,14 @@ function Checkout() {
                 const userLat = e.latlng.lat
                 const userLng = e.latlng.lng
                 
-                // Yangi marker qo'shish
                 markerRef.current = window.L.marker([userLat, userLng], {
                     icon: userIcon,
                     riseOnHover: true
                 }).addTo(map)
                 
                 markerRef.current.bindPopup(`
-                    <div style="
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        padding: 8px;
-                        text-align: center;
-                        font-weight: 500;
-                    ">
-                        📍 <strong>Sizning manzilingiz</strong><br/>
-                        <small style="color: #6c757d;">Yetkazib berish manzili</small>
+                    <div style="font-family: 'Segoe UI', sans-serif; padding: 8px; text-align: center;">
+                        📍 <strong>Sizning manzilingiz</strong>
                     </div>
                 `).openPopup()
                 
@@ -311,7 +315,6 @@ function Checkout() {
                     }
                 }, 3000)
                 
-                // Masofani hisoblash (avtomobil yo'li bilan)
                 const routeData = await calculateRoute(
                     CAFE_LOCATION.lat, CAFE_LOCATION.lng,
                     userLat, userLng
@@ -321,11 +324,8 @@ function Checkout() {
                     setDistance(routeData.distance)
                     const fee = calculateDeliveryFee(routeData.distance)
                     setDeliveryFee(fee)
-                    
-                    // Uzluksiz yo'lni chizish
                     drawRoute(routeData.coordinates)
                     
-                    // Manzil koordinatalarini saqlash
                     setSelectedLocation({
                         lat: userLat,
                         lng: userLng
@@ -337,7 +337,6 @@ function Checkout() {
                     
                     hapticFeedback()
                 } else {
-                    // Agar route hisoblanmasa, to'g'ri chiziqli masofani hisoblash
                     const R = 6371
                     const dLat = (userLat - CAFE_LOCATION.lat) * Math.PI / 180
                     const dLng = (userLng - CAFE_LOCATION.lng) * Math.PI / 180
@@ -351,7 +350,6 @@ function Checkout() {
                     const fee = calculateDeliveryFee(straightDistance)
                     setDeliveryFee(fee)
                     
-                    // To'g'ri chiziq chizish
                     const straightLine = [[CAFE_LOCATION.lat, CAFE_LOCATION.lng], [userLat, userLng]]
                     drawRoute(straightLine)
                     
@@ -365,29 +363,19 @@ function Checkout() {
                     }))
                     
                     hapticFeedback()
-                    showTelegramAlert("⚠️ Avtomobil yo'li topilmadi, to'g'ri chiziqli masofa hisoblandi!")
                 }
             })
 
-            // CSS qo'shimchalari
             const style = document.createElement('style')
             style.textContent = `
-                .user-marker {
-                    transition: transform 0.2s ease;
-                }
-                .user-marker:hover {
-                    transform: scale(1.1);
-                }
-                .cafe-marker {
-                    transition: transform 0.2s ease;
-                }
-                .cafe-marker:hover {
+                .user-marker:hover, .cafe-marker:hover {
                     transform: scale(1.1);
                 }
                 input, textarea, select {
                     -webkit-user-select: text !important;
                     user-select: text !important;
                     cursor: text !important;
+                    pointer-events: auto !important;
                 }
                 input:focus, textarea:focus, select:focus {
                     outline: 2px solid #ff6b35;
@@ -396,8 +384,12 @@ function Checkout() {
                 .leaflet-container {
                     cursor: crosshair !important;
                 }
-                .leaflet-container .leaflet-interactive {
-                    cursor: pointer !important;
+                /* Telegram Web App da inputlarni to'g'ri ishlashi uchun */
+                body {
+                    -webkit-tap-highlight-color: transparent;
+                }
+                input, textarea {
+                    touch-action: manipulation;
                 }
             `
             document.head.appendChild(style)
@@ -411,18 +403,7 @@ function Checkout() {
         }
     }, [mapLoaded])
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }))
-    }
-
-    // Mahsulotlar summasi
     const productsTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-    
-    // Umumiy summa (mahsulotlar + yetkazib berish narxi)
     const totalPrice = productsTotal + deliveryFee
 
     const sendToAdmin = async (orderData) => {
@@ -432,25 +413,18 @@ function Checkout() {
         message += `📞 Telefon: ${orderData.customer.phone}\n`
         message += `📍 Manzil: ${orderData.delivery.address}\n`
         message += `📏 Masofa: ${orderData.delivery.distance.toFixed(2)} km\n`
-        message += `🚚 Yetkazib berish narxi: ${orderData.delivery.deliveryFee.toLocaleString()} so'm\n`
-        message += `⏰ Yetkazib berish vaqti: ${orderData.delivery.deliveryTime}\n`
+        message += `🚚 Yetkazib berish: ${orderData.delivery.deliveryFee.toLocaleString()} so'm\n`
+        message += `⏰ Vaqt: ${orderData.delivery.deliveryTime}\n`
         message += `📝 Izoh: ${orderData.delivery.notes || "Yo'q"}\n\n`
-        message += `🛍️ BUYURTMA TARKIBI:\n`
-        message += `───────────────────\n`
-        orderData.items.forEach((item, index) => {
-            message += `${index + 1}. ${item.name}\n`
-            message += `   Miqdor: ${item.quantity} ta\n`
-            message += `   Narxi: ${item.price.toLocaleString()} so'm\n`
-            message += `   Summa: ${item.total.toLocaleString()} so'm\n\n`
+        message += `🛍️ BUYURTMA:\n`
+        orderData.items.forEach(item => {
+            message += `• ${item.name} x${item.quantity} = ${item.total.toLocaleString()} so'm\n`
         })
-        message += `───────────────────\n`
-        message += `💰 MAHSULOTLAR SUMMASI: ${orderData.productsAmount.toLocaleString()} so'm\n`
+        message += `\n💰 MAHSULOTLAR: ${orderData.productsAmount.toLocaleString()} so'm\n`
         message += `🚚 YETKAZIB BERISH: ${orderData.delivery.deliveryFee.toLocaleString()} so'm\n`
-        message += `💵 UMUMIY JAMI: ${orderData.totalAmount.toLocaleString()} so'm\n\n`
+        message += `💵 JAMI: ${orderData.totalAmount.toLocaleString()} so'm\n`
         message += `🆔 Buyurtma ID: ${orderData.orderId}\n`
-        message += `📅 Buyurtma vaqti: ${new Date(orderData.orderDate).toLocaleString('uz-UZ')}\n`
-        message += `📍 Kafe manzili: ${CAFE_LOCATION.lat}, ${CAFE_LOCATION.lng}\n`
-        message += `🏪 Frank Burger`
+        message += `📅 Vaqt: ${new Date(orderData.orderDate).toLocaleString()}`
 
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
         
@@ -465,39 +439,25 @@ function Checkout() {
                 })
             })
             const result = await response.json()
-            if (result.ok) {
-                console.log('✅ Adminga xabar yuborildi')
-                return true
-            } else {
-                console.error('Admin xabari yuborilmadi:', result)
-                return false
-            }
+            return result.ok
         } catch (error) {
-            console.error('Admin xabari yuborishda xatolik:', error)
+            console.error('Admin xatosi:', error)
             return false
         }
     }
 
     const sendToUser = async (orderData) => {
         let message = `🍔 FRANK BURGER 🍔\n\n`
-        message += `✅ Sizning buyurtmangiz qabul qilindi!\n\n`
+        message += `✅ Buyurtmangiz qabul qilindi!\n\n`
         message += `🆔 Buyurtma ID: ${orderData.orderId}\n`
-        message += `───────────────────\n`
-        message += `🛍️ BUYURTMA:\n`
-        orderData.items.forEach((item, index) => {
-            message += `${index + 1}. ${item.name} x${item.quantity} = ${item.total.toLocaleString()} so'm\n`
-        })
-        message += `───────────────────\n`
         message += `💰 Mahsulotlar: ${orderData.productsAmount.toLocaleString()} so'm\n`
         message += `🚚 Yetkazib berish: ${orderData.delivery.deliveryFee.toLocaleString()} so'm\n`
         message += `💵 Jami: ${orderData.totalAmount.toLocaleString()} so'm\n`
-        message += `───────────────────\n`
         message += `📏 Masofa: ${orderData.delivery.distance.toFixed(2)} km\n`
         message += `⏰ Yetkazib berish: ${orderData.delivery.deliveryTime}\n`
         message += `📍 Manzil: ${orderData.delivery.address}\n\n`
-        message += `📦 Buyurtma holatini "Buyurtmalar" bo'limidan kuzatishingiz mumkin.\n\n`
-        message += `☎️ Savollar uchun: +998 XX XXX XX XX\n`
-        message += `🏪 Frank Burger`
+        message += `📦 Holatni "Buyurtmalar" bo'limidan kuzating.\n\n`
+        message += `☎️ Savollar: +998 XX XXX XX XX`
 
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
         
@@ -512,28 +472,20 @@ function Checkout() {
                 })
             })
             const result = await response.json()
-            if (result.ok) {
-                console.log('✅ Foydalanuvchiga xabar yuborildi')
-                return true
-            } else {
-                console.log('Foydalanuvchi xatosi:', result.description)
-                return false
-            }
+            return result.ok
         } catch (error) {
-            console.error('Foydalanuvchi xabari yuborishda xatolik:', error)
+            console.error('Foydalanuvchi xatosi:', error)
             return false
         }
     }
 
     const saveToFirebase = async (orderData) => {
         try {
-            // Firestore'ga ma'lumotlarni saqlash
             const docRef = await addDoc(ordersCollection, {
                 ...orderData,
-                createdAt: Timestamp.now(),
-                updatedAt: Timestamp.now()
+                createdAt: Timestamp.now()
             })
-            console.log('✅ Firebase ga saqlandi! ID:', docRef.id)
+            console.log('✅ Firebase ID:', docRef.id)
             return { success: true, id: docRef.id }
         } catch (error) {
             console.error('Firebase xatosi:', error)
@@ -574,19 +526,12 @@ function Checkout() {
             },
             delivery: {
                 address: formData.address,
-                coordinates: {
-                    lat: selectedLocation.lat,
-                    lng: selectedLocation.lng
-                },
-                cafeLocation: {
-                    lat: CAFE_LOCATION.lat,
-                    lng: CAFE_LOCATION.lng,
-                    name: CAFE_LOCATION.name
-                },
+                coordinates: selectedLocation,
+                cafeLocation: CAFE_LOCATION,
                 distance: distance || 0,
                 deliveryFee: deliveryFee,
                 deliveryTime: formData.deliveryTime,
-                notes: formData.notes || ''
+                notes: formData.notes
             },
             items: cart.map(item => ({
                 id: item.id,
@@ -597,38 +542,23 @@ function Checkout() {
             })),
             productsAmount: productsTotal,
             totalAmount: totalPrice,
-            status: "Yangi",
-            paymentStatus: "Kutilmoqda",
-            createdAt: null, // Firestore timestamp qo'shiladi
-            updatedAt: null
+            status: "Yangi"
         }
 
-        // Firebase'ga saqlash
         const firebaseResult = await saveToFirebase(orderData)
         
         if (firebaseResult.success) {
-            // Telegram botga xabar yuborish
             await sendToAdmin(orderData)
             await sendToUser(orderData)
-            
             localStorage.removeItem('cart')
-            setLoading(false)
             
-            const successMessage = `✅ Buyurtma muvaffaqiyatli qabul qilindi!\n\n` +
-                `🆔 Buyurtma ID: ${orderData.orderId}\n` +
-                `💰 Mahsulotlar: ${productsTotal.toLocaleString()} so'm\n` +
-                `🚚 Yetkazib berish: ${deliveryFee.toLocaleString()} so'm\n` +
-                `💵 Jami: ${totalPrice.toLocaleString()} so'm\n` +
-                `📏 Masofa: ${distance ? distance.toFixed(2) : '0'} km\n` +
-                `⏰ Yetkazib berish vaqti: ${formData.deliveryTime}\n\n` +
-                `📋 Buyurtma holatini "Buyurtmalar" bo'limidan kuzatishingiz mumkin.`
-            
-            showTelegramAlert(successMessage)
+            showTelegramAlert(`✅ Buyurtma qabul qilindi!\n🆔 ID: ${orderData.orderId}\n💰 Jami: ${totalPrice.toLocaleString()} so'm`)
             navigate('/')
         } else {
-            setLoading(false)
-            showTelegramAlert(`❌ Xatolik yuz berdi: ${firebaseResult.error}\nIltimos, qaytadan urinib ko'ring!`)
+            showTelegramAlert(`❌ Xatolik: ${firebaseResult.error}`)
         }
+        
+        setLoading(false)
     }
 
     const deliveryTimes = [
@@ -648,7 +578,7 @@ function Checkout() {
                 <h1>Buyurtmani rasmiylashtirish</h1>
                 {telegramId && (
                     <div className="telegram-badge">
-                        👤 ID: {telegramId}
+                        ID: {telegramId}
                     </div>
                 )}
             </div>
@@ -668,6 +598,7 @@ function Checkout() {
                                     onChange={handleInputChange}
                                     onFocus={handleInputFocus}
                                     onClick={handleInputClick}
+                                    onBlur={handleInputBlur}
                                     placeholder="Ismingiz"
                                     autoComplete="off"
                                 />
@@ -682,6 +613,7 @@ function Checkout() {
                                     onChange={handleInputChange}
                                     onFocus={handleInputFocus}
                                     onClick={handleInputClick}
+                                    onBlur={handleInputBlur}
                                     placeholder="Familiyangiz"
                                     autoComplete="off"
                                 />
@@ -697,6 +629,7 @@ function Checkout() {
                                 onChange={handleInputChange}
                                 onFocus={handleInputFocus}
                                 onClick={handleInputClick}
+                                onBlur={handleInputBlur}
                                 placeholder="+998 XX XXX XX XX"
                                 autoComplete="off"
                             />
@@ -713,35 +646,17 @@ function Checkout() {
                             {distance && (
                                 <div className="distance-info">
                                     <div className="distance-details">
-                                        <span>📏 Masofa (avtomobil yo'li):</span>
+                                        <span>📏 Masofa:</span>
                                         <strong>{distance.toFixed(2)} km</strong>
                                     </div>
                                     <div className="delivery-fee-details">
-                                        <span>🚚 Yetkazib berish narxi:</span>
+                                        <span>🚚 Yetkazib berish:</span>
                                         <strong className={deliveryFee > 0 ? 'fee-amount' : 'free-delivery'}>
                                             {deliveryFee > 0 ? `${deliveryFee.toLocaleString()} so'm` : 'Bepul'}
                                         </strong>
                                     </div>
-                                    {deliveryFee > 0 && (
-                                        <div className="fee-info">
-                                            💡 1 km gacha bepul, keyingi har bir km uchun +{DELIVERY_RATE_PER_KM.toLocaleString()} so'm
-                                        </div>
-                                    )}
                                 </div>
                             )}
-                        </div>
-                        <div className="form-group">
-                            <label>Manzil koordinatalari</label>
-                            <input
-                                type="text"
-                                name="address"
-                                value={formData.address}
-                                onChange={handleInputChange}
-                                onFocus={handleInputFocus}
-                                onClick={handleInputClick}
-                                placeholder="Xaritadan manzil belgilang"
-                                readOnly
-                            />
                         </div>
                     </div>
 
@@ -770,7 +685,7 @@ function Checkout() {
                                 onChange={handleInputChange}
                                 onFocus={handleInputFocus}
                                 onClick={handleInputClick}
-                                placeholder="Maxsus talablar: qo'shimcha sous, piyozsiz va h.k."
+                                placeholder="Maxsus talablar..."
                                 rows="3"
                             />
                         </div>
@@ -785,37 +700,15 @@ function Checkout() {
                                     <span>{(item.price * item.quantity).toLocaleString()} so'm</span>
                                 </div>
                             ))}
-                            <div className="order-delivery-breakdown">
-                                <div className="delivery-row">
-                                    <span>🚚 Yetkazib berish:</span>
-                                    <span className={deliveryFee > 0 ? '' : 'free'}>
-                                        {deliveryFee > 0 ? `${deliveryFee.toLocaleString()} so'm` : 'Bepul'}
-                                    </span>
-                                </div>
-                                {distance && deliveryFee > 0 && (
-                                    <div className="delivery-calculation">
-                                        <small>
-                                            ({distance.toFixed(2)} km - 1 km) × {DELIVERY_RATE_PER_KM.toLocaleString()} so'm = {deliveryFee.toLocaleString()} so'm
-                                        </small>
-                                    </div>
-                                )}
-                                {distance && deliveryFee === 0 && (
-                                    <div className="delivery-calculation free">
-                                        <small>
-                                            ✅ {distance.toFixed(2)} km masofa uchun yetkazib berish bepul (1 km gacha)
-                                        </small>
-                                    </div>
-                                )}
-                            </div>
                             <div className="order-total">
-                                <strong>Jami to'lov:</strong>
+                                <strong>Jami:</strong>
                                 <strong>{totalPrice.toLocaleString()} so'm</strong>
                             </div>
                         </div>
                     </div>
 
                     <button type="submit" className="submit-btn" disabled={loading}>
-                        {loading ? "⏳ Yuborilmoqda..." : "✅ Buyurtmani tasdiqlash"}
+                        {loading ? "Yuborilmoqda..." : "✅ Buyurtmani tasdiqlash"}
                     </button>
                 </form>
             </div>

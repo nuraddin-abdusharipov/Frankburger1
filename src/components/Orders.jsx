@@ -66,14 +66,11 @@ function Orders() {
                         setDebugInfo(`Telegram ID: ${user.id}`)
                     } else {
                         // Test uchun - o'z ID ni qo'ying
-                        const testId = 7164122768 // O'z testingizdagi ID ni qo'ying
                         console.log('Test ID ishlatilmoqda:', testId)
                         setTelegramId(testId)
                         setDebugInfo(`Test ID: ${testId}`)
                     }
                 } else {
-                    // Telegram Web App mavjud emas - test mode
-                    const testId = 7164122768
                     console.log('Telegram mavjud emas, test ID:', testId)
                     setTelegramId(testId)
                     setDebugInfo(`Test mode ID: ${testId}`)
@@ -81,15 +78,12 @@ function Orders() {
             } catch (error) {
                 console.error('Telegram ID olishda xatolik:', error)
                 setDebugInfo(`Xatolik: ${error.message}`)
-                // Fallback test ID
-                setTelegramId(7164122768)
             }
         }
         
         getUserInfo()
     }, [])
 
-    // Xaritani ko'rsatish
     useEffect(() => {
         if (selectedOrder && selectedOrder.delivery?.coordinates && leafletLoaded && window.L && mapRef.current) {
             if (mapInstanceRef.current) {
@@ -158,7 +152,6 @@ function Orders() {
         }
     }, [selectedOrder, leafletLoaded])
 
-    // Buyurtmalarni fetch qilish
     const fetchOrders = async (loadMore = false) => {
         if (!telegramId) {
             console.log('Telegram ID mavjud emas')
@@ -220,7 +213,6 @@ function Orders() {
             console.error("Firebase xatolik:", err)
             setDebugInfo(prev => `${prev}\nXatolik: ${err.message}`)
             
-            // Fallback - barcha buyurtmalarni olish va filter qilish
             try {
                 console.log('Fallback: barcha buyurtmalarni olish')
                 const q = query(ordersCollection, orderBy("orderDate", "desc"), limit(50))
@@ -251,7 +243,6 @@ function Orders() {
         setLoading(false)
     }
 
-    // Bitta buyurtmani fetch qilish
     const fetchOrderDetail = async (id) => {
         setLoading(true)
         try {
@@ -334,7 +325,6 @@ function Orders() {
         return "Sana yo‘q"
     }
 
-    // Buyurtma detali sahifasi
     if (orderId && selectedOrder) {
         return (
             <div className="OrdersPage">
@@ -451,7 +441,6 @@ function Orders() {
         )
     }
 
-    // Yuklash holati
     if (loading && orders.length === 0) {
         return (
             <div className="OrdersPage">
@@ -465,7 +454,6 @@ function Orders() {
         )
     }
 
-    // Asosiy sahifa
     return (
         <div className="OrdersPage">
             <div className="orders-header">
@@ -473,7 +461,6 @@ function Orders() {
                 <h2>📦 Mening buyurtmalarim</h2>
                 <p className="telegram-id-text">ID: {telegramId}</p>
             </div>
-
 
             {orders.length === 0 ? (
                 <div className="no-orders">

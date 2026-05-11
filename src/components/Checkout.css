@@ -330,3 +330,87 @@ select option {
         font-size: 16px;
     }
 }
+.order-delivery-info {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 12px;
+    margin: 12px 0;
+    border: 1px solid #e9ecef;
+}
+
+.delivery-distance-row,
+.delivery-fee-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+}
+
+.delivery-distance-row span:first-child,
+.delivery-fee-row span:first-child {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.delivery-distance-row span:last-child {
+    font-weight: 600;
+    color: #495057;
+}
+
+.delivery-fee-row span:last-child {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.free-delivery-text {
+    color: #28a745 !important;
+}
+
+.delivery-calculation-note,
+.free-delivery-note {
+    text-align: right;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px dashed #dee2e6;
+}
+
+.delivery-calculation-note small {
+    color: #ff6b35;
+    font-size: 11px;
+}
+
+.free-delivery-note small {
+    color: #28a745;
+    font-size: 11px;
+}
+
+.order-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid #dee2e6;
+}
+
+.order-total-delivery {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0 10px 0;
+    color: #ff6b35;
+    font-size: 14px;
+    border-bottom: 1px dashed #dee2e6;
+}
+
+.order-grand-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0 0 0;
+    font-size: 18px;
+}
+
+.total-amount {
+    color: #ff6b35;
+    font-size: 20px;
+}

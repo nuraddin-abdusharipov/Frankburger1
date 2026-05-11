@@ -42,17 +42,13 @@ function Checkout() {
 
     // Telegram Web App ni to'g'ri ishga tushirish
     useEffect(() => {
-        // Telegram Web App ni kengaytirish
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.expand()
-            
-            // Closing confirmation faqat qo'llab-quvvatlansa
             try {
                 window.Telegram.WebApp.enableClosingConfirmation()
             } catch (e) {
-                console.log('Closing confirmation not supported in this version')
+                console.log('Closing confirmation not supported')
             }
-            
             window.Telegram.WebApp.MainButton?.hide()
         }
         
@@ -69,7 +65,6 @@ function Checkout() {
         }
     }, [])
 
-    // Input o'zgarishini qayta ishlash
     const handleInputChange = (e) => {
         const { name, value } = e.target
         setFormData(prev => ({
@@ -78,7 +73,6 @@ function Checkout() {
         }))
     }
 
-    // Input fokuslanganda
     const handleInputFocus = (e) => {
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.expand()
@@ -301,7 +295,6 @@ function Checkout() {
                     
                     hapticFeedback()
                 } else {
-                    // To'g'ri chiziqli masofa (fallback)
                     const R = 6371
                     const dLat = (userLat - CAFE_LOCATION.lat) * Math.PI / 180
                     const dLng = (userLng - CAFE_LOCATION.lng) * Math.PI / 180
@@ -588,11 +581,11 @@ function Checkout() {
                             {distance && (
                                 <div className="distance-info">
                                     <div className="distance-details">
-                                        <span>📏 Masofa:</span>
+                                        <span>📏 Masofa (avtomobil yo'li):</span>
                                         <strong>{distance.toFixed(2)} km</strong>
                                     </div>
                                     <div className="delivery-fee-details">
-                                        <span>🚚 Yetkazib berish:</span>
+                                        <span>🚚 Yetkazib berish narxi:</span>
                                         <strong className={deliveryFee > 0 ? 'fee-amount' : 'free-delivery'}>
                                             {deliveryFee > 0 ? `${deliveryFee.toLocaleString()} so'm` : 'Bepul'}
                                         </strong>
@@ -645,9 +638,48 @@ function Checkout() {
                                     <span>{(item.price * item.quantity).toLocaleString()} so'm</span>
                                 </div>
                             ))}
+                            
+                            {/* Masofa va yetkazib berish narxi qo'shildi */}
+                            {distance && (
+                                <div className="order-delivery-info">
+                                    <div className="delivery-distance-row">
+                                        <span>📏 Masofa:</span>
+                                        <span>{distance.toFixed(2)} km</span>
+                                    </div>
+                                    <div className="delivery-fee-row">
+                                        <span>🚚 Yetkazib berish:</span>
+                                        <span className={deliveryFee > 0 ? '' : 'free-delivery-text'}>
+                                            {deliveryFee > 0 ? `${deliveryFee.toLocaleString()} so'm` : 'Bepul'}
+                                        </span>
+                                    </div>
+                                    {deliveryFee > 0 && (
+                                        <div className="delivery-calculation-note">
+                                            <small>
+                                                ({distance.toFixed(2)} km - 1 km) × {DELIVERY_RATE_PER_KM.toLocaleString()} so'm = {deliveryFee.toLocaleString()} so'm
+                                            </small>
+                                        </div>
+                                    )}
+                                    {deliveryFee === 0 && distance <= FREE_DELIVERY_DISTANCE && (
+                                        <div className="free-delivery-note">
+                                            <small>✅ {distance.toFixed(2)} km masofa uchun yetkazib berish bepul (1 km gacha)</small>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            
                             <div className="order-total">
-                                <strong>Jami:</strong>
-                                <strong>{totalPrice.toLocaleString()} so'm</strong>
+                                <strong>Mahsulotlar summasi:</strong>
+                                <strong>{productsTotal.toLocaleString()} so'm</strong>
+                            </div>
+                            {deliveryFee > 0 && (
+                                <div className="order-total-delivery">
+                                    <span>+ Yetkazib berish:</span>
+                                    <span>{deliveryFee.toLocaleString()} so'm</span>
+                                </div>
+                            )}
+                            <div className="order-grand-total">
+                                <strong>Jami to'lov:</strong>
+                                <strong className="total-amount">{totalPrice.toLocaleString()} so'm</strong>
                             </div>
                         </div>
                     </div>

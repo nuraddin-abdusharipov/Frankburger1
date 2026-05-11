@@ -25,25 +25,21 @@ function Orders() {
     const [leafletLoaded, setLeafletLoaded] = useState(false)
     const mapRef = useRef(null)
     const mapInstanceRef = useRef(null)
+    const [debugInfo, setDebugInfo] = useState('')
 
     const ORDERS_PER_PAGE = 10
 
     // Leaflet ni yuklash
     useEffect(() => {
-        // CSS yuklash
         const link = document.createElement('link')
         link.rel = 'stylesheet'
         link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
         document.head.appendChild(link)
 
-        // JS yuklash
         const script = document.createElement('script')
         script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
         script.onload = () => {
             setLeafletLoaded(true)
-        }
-        script.onerror = () => {
-            console.error('Leaflet yuklanmadi')
         }
         document.head.appendChild(script)
 
@@ -53,10 +49,49 @@ function Orders() {
         }
     }, [])
 
-    // Xaritani ko'rsatish - faqat xarita qismi
+    // Telegram ID ni olish
+    useEffect(() => {
+        const getUserInfo = async () => {
+            try {
+                // Telegram Web App dan foydalanuvchi ma'lumotlarini olish
+                if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.ready()
+                    window.Telegram.WebApp.expand()
+                    
+                    const user = window.Telegram.WebApp.initDataUnsafe?.user
+                    console.log('Telegram user:', user)
+                    
+                    if (user?.id) {
+                        setTelegramId(user.id)
+                        setDebugInfo(`Telegram ID: ${user.id}`)
+                    } else {
+                        // Test uchun - o'z ID ni qo'ying
+                        const testId = 7164122768 // O'z testingizdagi ID ni qo'ying
+                        console.log('Test ID ishlatilmoqda:', testId)
+                        setTelegramId(testId)
+                        setDebugInfo(`Test ID: ${testId}`)
+                    }
+                } else {
+                    // Telegram Web App mavjud emas - test mode
+                    const testId = 7164122768
+                    console.log('Telegram mavjud emas, test ID:', testId)
+                    setTelegramId(testId)
+                    setDebugInfo(`Test mode ID: ${testId}`)
+                }
+            } catch (error) {
+                console.error('Telegram ID olishda xatolik:', error)
+                setDebugInfo(`Xatolik: ${error.message}`)
+                // Fallback test ID
+                setTelegramId(7164122768)
+            }
+        }
+        
+        getUserInfo()
+    }, [])
+
+    // Xaritani ko'rsatish
     useEffect(() => {
         if (selectedOrder && selectedOrder.delivery?.coordinates && leafletLoaded && window.L && mapRef.current) {
-            // Eski xaritani tozalash
             if (mapInstanceRef.current) {
                 mapInstanceRef.current.remove()
                 mapInstanceRef.current = null
@@ -66,15 +101,12 @@ function Orders() {
             const { lat, lng } = selectedOrder.delivery.coordinates
             const cafeLocation = selectedOrder.delivery?.cafeLocation || { lat: 41.3783, lng: 60.3639 }
             
-            // Xaritani yaratish
             const map = L.map(mapRef.current).setView([lat, lng], 13)
             
-            // Xarita asosiy qatlami
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map)
             
-            // Kafe markeri
             const cafeIcon = L.icon({
                 iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
                 iconSize: [25, 41],
@@ -83,7 +115,6 @@ function Orders() {
                 shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
             })
             
-            // Foydalanuvchi markeri (qizil rangda)
             const userIcon = L.icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
                 iconSize: [25, 41],
@@ -92,22 +123,18 @@ function Orders() {
                 shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
             })
             
-            // Kafe markeri qo'shish
             L.marker([cafeLocation.lat, cafeLocation.lng], { icon: cafeIcon })
                 .addTo(map)
                 .bindPopup('<b>🍔 Frank Burger</b><br/>Kafe manzili')
             
-            // Foydalanuvchi markeri qo'shish
             L.marker([lat, lng], { icon: userIcon })
                 .addTo(map)
                 .bindPopup(`
                     <b>${selectedOrder.customer?.fullName || 'Mijoz'}</b><br/>
-                    📞 ${selectedOrder.customer?.phone || 'Telefon yoq'}<br/>
-                    📍 ${selectedOrder.delivery?.address?.substring(0, 50) || 'Manzil'}
+                    📞 ${selectedOrder.customer?.phone || 'Telefon yoq'}
                 `)
                 .openPopup()
             
-            // Ikki nuqta orasidagi chiziq
             L.polyline([
                 [cafeLocation.lat, cafeLocation.lng],
                 [lat, lng]
@@ -117,7 +144,6 @@ function Orders() {
                 opacity: 0.7
             }).addTo(map)
             
-            // Ikkala nuqtani ko'rsatish
             const bounds = L.latLngBounds([[cafeLocation.lat, cafeLocation.lng], [lat, lng]])
             map.fitBounds(bounds, { padding: [30, 30] })
             
@@ -132,33 +158,100 @@ function Orders() {
         }
     }, [selectedOrder, leafletLoaded])
 
-    useEffect(() => {
-        const tg = window.Telegram?.WebApp
+    // Buyurtmalarni fetch qilish
+    const fetchOrders = async (loadMore = false) => {
+        if (!telegramId) {
+            console.log('Telegram ID mavjud emas')
+            setLoading(false)
+            return
+        }
 
-        if (tg) {
-            tg.ready()
-            tg.expand()
+        setLoading(true)
+        console.log('Fetching orders for telegramId:', telegramId)
 
-            const user = tg.initDataUnsafe?.user
-
-            if (user?.id) {
-                setTelegramId(user.id)
+        try {
+            let q
+            
+            if (loadMore && lastDoc) {
+                q = query(
+                    ordersCollection,
+                    where("telegramId", "==", Number(telegramId)),
+                    orderBy("orderDate", "desc"),
+                    startAfter(lastDoc),
+                    limit(ORDERS_PER_PAGE)
+                )
             } else {
-                setTelegramId(7787131118)
+                q = query(
+                    ordersCollection,
+                    where("telegramId", "==", Number(telegramId)),
+                    orderBy("orderDate", "desc"),
+                    limit(ORDERS_PER_PAGE)
+                )
             }
-        } else {
-            setTelegramId(7787131118)
-        }
-    }, [])
 
-    useEffect(() => {
-        if (orderId && telegramId) {
-            fetchOrderDetail(orderId)
-        } else if (telegramId) {
-            fetchOrders()
-        }
-    }, [orderId, telegramId])
+            const snapshot = await getDocs(q)
+            console.log('Snapshot size:', snapshot.size)
+            
+            const data = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }))
+            
+            console.log('Orders data:', data)
 
+            const lastVisible = snapshot.docs[snapshot.docs.length - 1]
+
+            setLastDoc(lastVisible)
+            setHasMore(data.length === ORDERS_PER_PAGE)
+
+            if (loadMore) {
+                setOrders(prev => [...prev, ...data])
+            } else {
+                setOrders(data)
+            }
+            
+            if (data.length === 0) {
+                setDebugInfo(prev => `${prev}\nBuyurtmalar topilmadi. Telegram ID: ${telegramId}`)
+            } else {
+                setDebugInfo(prev => `${prev}\n${data.length} ta buyurtma topildi`)
+            }
+
+        } catch (err) {
+            console.error("Firebase xatolik:", err)
+            setDebugInfo(prev => `${prev}\nXatolik: ${err.message}`)
+            
+            // Fallback - barcha buyurtmalarni olish va filter qilish
+            try {
+                console.log('Fallback: barcha buyurtmalarni olish')
+                const q = query(ordersCollection, orderBy("orderDate", "desc"), limit(50))
+                const snapshot = await getDocs(q)
+                let allOrders = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }))
+                
+                console.log('All orders:', allOrders)
+                allOrders = allOrders.filter(order => order.telegramId === Number(telegramId))
+                console.log('Filtered orders:', allOrders)
+                
+                setOrders(allOrders)
+                setHasMore(false)
+                
+                if (allOrders.length === 0) {
+                    setDebugInfo(prev => `${prev}\nFallback: hech qanday buyurtma topilmadi`)
+                } else {
+                    setDebugInfo(prev => `${prev}\nFallback: ${allOrders.length} ta buyurtma topildi`)
+                }
+            } catch (err2) {
+                console.error("Fallback xatolik:", err2)
+                setDebugInfo(prev => `${prev}\nFallback xatolik: ${err2.message}`)
+            }
+        }
+
+        setLoading(false)
+    }
+
+    // Bitta buyurtmani fetch qilish
     const fetchOrderDetail = async (id) => {
         setLoading(true)
         try {
@@ -184,49 +277,13 @@ function Orders() {
         }
     }
 
-    const fetchOrders = async (loadMore = false) => {
-        if (!telegramId) return
-
-        setLoading(true)
-
-        try {
-            let q
-            
-            if (loadMore && lastDoc) {
-                q = query(
-                    ordersCollection,
-                    where("telegramId", "==", Number(telegramId)),
-                    orderBy("orderDate", "desc"),
-                    startAfter(lastDoc),
-                    limit(ORDERS_PER_PAGE)
-                )
-            } else {
-                q = query(
-                    ordersCollection,
-                    where("telegramId", "==", Number(telegramId)),
-                    orderBy("orderDate", "desc"),
-                    limit(ORDERS_PER_PAGE)
-                )
-            }
-
-            const snapshot = await getDocs(q)
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-            const lastVisible = snapshot.docs[snapshot.docs.length - 1]
-
-            setLastDoc(lastVisible)
-            setHasMore(data.length === ORDERS_PER_PAGE)
-
-            if (loadMore) {
-                setOrders(prev => [...prev, ...data])
-            } else {
-                setOrders(data)
-            }
-        } catch (err) {
-            console.error("Xatolik:", err)
+    useEffect(() => {
+        if (orderId && telegramId) {
+            fetchOrderDetail(orderId)
+        } else if (telegramId) {
+            fetchOrders()
         }
-
-        setLoading(false)
-    }
+    }, [orderId, telegramId])
 
     const loadMore = () => {
         if (!loading && hasMore) {
@@ -249,7 +306,7 @@ function Orders() {
             case "Tayyorlanmoqda": return "🔧 Tayyorlanmoqda"
             case "Yetkazilmoqda": return "🚚 Yetkazilmoqda"
             case "Bajarilgan": return "✅ Bajarilgan"
-            default: return status
+            default: return status || "🆕 Yangi"
         }
     }
 
@@ -333,15 +390,8 @@ function Orders() {
                                 </span>
                             </div>
                         )}
-                        {selectedOrder.delivery?.notes && (
-                            <div className="detail-row">
-                                <span className="detail-label">Qo'shimcha izoh:</span>
-                                <span className="detail-value">{selectedOrder.delivery.notes}</span>
-                            </div>
-                        )}
                     </div>
 
-                    {/* Xarita qismi - TO'G'RILANGAN */}
                     {selectedOrder.delivery?.coordinates && (
                         <div className="detail-section">
                             <h3>🗺️ Manzil xaritada</h3>
@@ -349,18 +399,16 @@ function Orders() {
                                 <p>Latitude: {selectedOrder.delivery.coordinates.lat.toFixed(6)}</p>
                                 <p>Longitude: {selectedOrder.delivery.coordinates.lng.toFixed(6)}</p>
                             </div>
-                            {/* Xarita shu divga yuklanadi */}
                             <div 
                                 ref={mapRef} 
                                 className="order-map-container"
-                                style={{ width: '100%', height: '300px', borderRadius: '12px', overflow: 'hidden', margin: '10px 0' }}
+                                style={{ width: '100%', height: '300px', borderRadius: '12px', overflow: 'hidden', margin: '10px 0', background: '#f0f0f0' }}
                             ></div>
                             <a 
                                 href={`https://www.google.com/maps?q=${selectedOrder.delivery.coordinates.lat},${selectedOrder.delivery.coordinates.lng}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="map-link"
-                                style={{ display: 'inline-block', marginTop: '10px', color: '#4285f4', textDecoration: 'none' }}
                             >
                                 🗺️ Google Maps da ochish
                             </a>
@@ -403,19 +451,7 @@ function Orders() {
         )
     }
 
-    // Buyurtmalar ro'yxati sahifasi
-    if (!telegramId) {
-        return (
-            <div className="OrdersPage">
-                <div className="orders-header">
-                    <Link to="/" className="back-link">← Orqaga</Link>
-                    <h2>Mening buyurtmalarim</h2>
-                </div>
-                <p style={{ textAlign: 'center', padding: '20px' }}>⏳ Yuklanmoqda...</p>
-            </div>
-        )
-    }
-
+    // Yuklash holati
     if (loading && orders.length === 0) {
         return (
             <div className="OrdersPage">
@@ -424,10 +460,12 @@ function Orders() {
                     <h2>Mening buyurtmalarim</h2>
                 </div>
                 <p style={{ textAlign: 'center', padding: '20px' }}>⏳ Buyurtmalar yuklanmoqda...</p>
+                <p style={{ textAlign: 'center', fontSize: '12px', color: '#999' }}>{debugInfo}</p>
             </div>
         )
     }
 
+    // Asosiy sahifa
     return (
         <div className="OrdersPage">
             <div className="orders-header">
@@ -436,9 +474,18 @@ function Orders() {
                 <p className="telegram-id-text">ID: {telegramId}</p>
             </div>
 
+            {/* Debug ma'lumot */}
+            <div style={{ background: '#f0f0f0', padding: '8px', margin: '10px', borderRadius: '8px', fontSize: '12px' }}>
+                <strong>Debug:</strong> {debugInfo}
+            </div>
+
             {orders.length === 0 ? (
                 <div className="no-orders">
                     <p>😕 Siz hali buyurtma bermagansiz</p>
+                    <p style={{ fontSize: '12px', color: '#999', marginTop: '10px' }}>
+                        Telegram ID: {telegramId}<br/>
+                        Agar buyurtma bergan bo'lsangiz, ID mos kelmasligi mumkin.
+                    </p>
                     <Link to="/" className="order-now-btn">Buyurtma berish</Link>
                 </div>
             ) : (

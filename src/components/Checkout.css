@@ -441,3 +441,30 @@ form {
 .form-group {
     pointer-events: auto !important;
 }
+
+/* Inputlarni Telegram Web App da to'g'ri ishlashi uchun */
+input, textarea, select {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    cursor: text !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    background-color: white !important;
+    color: #333 !important;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: 2px solid #ff6b35 !important;
+    background-color: #fff !important;
+}
+
+/* Form va inputlarni to'liq interaktiv qilish */
+form, .form-group, .form-section {
+    pointer-events: auto !important;
+}
+
+/* Inputlar uchun z-index */
+input, textarea, select {
+    position: relative;
+    z-index: 10;
+}

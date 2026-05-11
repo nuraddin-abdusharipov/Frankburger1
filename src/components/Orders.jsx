@@ -474,10 +474,6 @@ function Orders() {
                 <p className="telegram-id-text">ID: {telegramId}</p>
             </div>
 
-            {/* Debug ma'lumot */}
-            <div style={{ background: '#f0f0f0', padding: '8px', margin: '10px', borderRadius: '8px', fontSize: '12px' }}>
-                <strong>Debug:</strong> {debugInfo}
-            </div>
 
             {orders.length === 0 ? (
                 <div className="no-orders">

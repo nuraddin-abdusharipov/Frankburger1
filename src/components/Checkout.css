@@ -449,13 +449,13 @@ input, textarea, select {
     cursor: text !important;
     pointer-events: auto !important;
     opacity: 1 !important;
-    background-color: white !important;
-    color: #333 !important;
+    background-color: #333 !important;
+    color: white !important;
 }
 
 input:focus, textarea:focus, select:focus {
     outline: 2px solid #ff6b35 !important;
-    background-color: #fff !important;
+    background-color: rgba(255, 166, 0, 0.25) !important;
 }
 
 /* Form va inputlarni to'liq interaktiv qilish */

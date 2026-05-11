@@ -39,17 +39,15 @@ function Checkout() {
     const DELIVERY_RATE_PER_KM = 500
     const FREE_DELIVERY_DISTANCE = 1
 
-    // Telegram Web App ni ishga tushirish
+    // Telegram Web App ni ishga tushirish - soddalashtirilgan
     useEffect(() => {
+        // Faqat Telegram Web App mavjud bo'lsa
         if (window.Telegram?.WebApp) {
+            // Kengaytirish
             window.Telegram.WebApp.expand()
-            try {
-                window.Telegram.WebApp.enableClosingConfirmation()
-            } catch (e) {
-                console.log('Closing confirmation not supported')
-            }
         }
         
+        // Foydalanuvchi ma'lumotlarini olish
         const tgUser = getTelegramUser()
         
         if (tgUser && tgUser.id) {
@@ -61,6 +59,19 @@ function Checkout() {
                 lastName: tgUser.lastName || ''
             }))
         }
+        
+        // Inputlarni to'g'ri ishlashi uchun event listener
+        const enableInputs = () => {
+            const inputs = document.querySelectorAll('input, textarea, select')
+            inputs.forEach(input => {
+                input.style.pointerEvents = 'auto'
+                input.disabled = false
+            })
+        }
+        
+        // Bir oz kechikish bilan ishga tushirish
+        setTimeout(enableInputs, 100)
+        
     }, [])
 
     // Input o'zgarishlari
@@ -70,6 +81,12 @@ function Checkout() {
             ...prev,
             [name]: value
         }))
+    }
+
+    // Input fokuslanganda - hech qanday to'siq bo'lmasligi kerak
+    const handleInputFocus = (e) => {
+        // Inputga fokus berish
+        e.target.focus()
     }
 
     // OSRM API orqali masofani hisoblash
@@ -517,6 +534,7 @@ function Checkout() {
                                     required
                                     value={formData.firstName}
                                     onChange={handleInputChange}
+                                    onFocus={handleInputFocus}
                                     placeholder="Ismingiz"
                                     autoComplete="off"
                                 />
@@ -529,6 +547,7 @@ function Checkout() {
                                     required
                                     value={formData.lastName}
                                     onChange={handleInputChange}
+                                    onFocus={handleInputFocus}
                                     placeholder="Familiyangiz"
                                     autoComplete="off"
                                 />
@@ -542,6 +561,7 @@ function Checkout() {
                                 required
                                 value={formData.phone}
                                 onChange={handleInputChange}
+                                onFocus={handleInputFocus}
                                 placeholder="+998 XX XXX XX XX"
                                 autoComplete="off"
                             />
@@ -585,6 +605,7 @@ function Checkout() {
                                 required
                                 value={formData.deliveryTime}
                                 onChange={handleInputChange}
+                                onFocus={handleInputFocus}
                             >
                                 <option value="">Vaqtni tanlang</option>
                                 {deliveryTimes.map(time => (
@@ -598,6 +619,7 @@ function Checkout() {
                                 name="notes"
                                 value={formData.notes}
                                 onChange={handleInputChange}
+                                onFocus={handleInputFocus}
                                 placeholder="Maxsus talablar..."
                                 rows="3"
                             />

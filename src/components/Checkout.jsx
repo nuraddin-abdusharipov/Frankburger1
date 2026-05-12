@@ -32,7 +32,7 @@ function Checkout() {
     
     const CAFE_LOCATION = {
         lat: 41.3776046,
-        lng: 60.3639,
+        lng: 60,3724037,
         name: "Frank Burger"
     }
     

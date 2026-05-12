@@ -31,7 +31,7 @@ function Checkout() {
     const ADMIN_CHAT_ID = "7787131118"
     
     const CAFE_LOCATION = {
-        lat: 41.3783,
+        lat: 41.3776046,
         lng: 60.3639,
         name: "Frank Burger"
     }

@@ -1,16 +1,124 @@
-# React + Vite
+# 🍔 Frank Burger Mini App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Modern Telegram Mini App for ordering burgers and fast food online.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+# 📌 About Project
 
-## React Compiler
+Frank Burger Mini App is a modern food delivery application integrated directly into Telegram.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Users can automatically authenticate through Telegram, browse food products, add items to cart, place delivery orders, and track their order status in real time.
 
-## Expanding the ESLint configuration
+The application also includes an admin management system for confirming and managing orders.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+# ✨ Features
+
+## 🔐 Telegram Auto Authentication
+- Automatic login through Telegram
+- No registration required
+- Secure Telegram user verification
+- Fast and seamless user experience
+
+---
+
+## 🍔 Food Ordering System
+- Browse burger menu
+- View product details
+- Add items to cart
+- Update quantities
+- Remove products from cart
+
+---
+
+## 🛒 Shopping Cart
+- Dynamic cart management
+- Real-time total price calculation
+- Fast checkout process
+- Responsive design
+
+---
+
+## 🚚 Delivery Orders
+- Create online delivery orders
+- Address input support
+- Phone number support
+- Additional order notes
+- Quick order processing
+
+---
+
+## 📦 Order Tracking
+Users can track their orders directly from the Mini App.
+
+### Order statuses:
+- Pending
+- Confirmed
+- Preparing
+- On Delivery
+- Delivered
+- Cancelled
+
+---
+
+## 👨‍💼 Admin Panel Features
+- View all orders
+- Confirm orders
+- Update order statuses
+- Manage deliveries
+- Monitor active orders
+
+---
+
+## 👤 User Profile
+- Telegram profile integration
+- Personal information section
+- Order history
+- User account management
+
+---
+
+# 🛠️ Technologies
+
+- React.js
+- Node.js
+- Express.js
+- Firebase Database
+- Telegram Mini Apps SDK
+- Telegram Bot API
+- Tailwind CSS
+
+---
+
+# 📱 Application Sections
+
+| Section | Description |
+|---|---|
+| Home | Product listing and categories |
+| Cart | Shopping cart management |
+| Orders | Order history and tracking |
+| Profile | User profile information |
+| Admin Panel | Order management system |
+
+---
+
+# 🚀 Future Improvements
+- Push notifications
+- Promo code system
+- Multi-language support
+- Better admin analytics
+- Real-time delivery tracking
+
+---
+
+# 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+# 👨‍💻 Developer
+
+Built for the Telegram Mini Apps ecosystem using React, Node.js, and Firebase.

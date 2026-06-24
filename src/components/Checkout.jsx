@@ -27,7 +27,7 @@ function Checkout() {
     const routeLayerRef = useRef(null)
     const cafeMarkerRef = useRef(null)
 
-    const TELEGRAM_BOT_TOKEN = "8771407234:AAHADEssK1m_OiLmLfgDgxOOJF4WK_-wwzc"
+    const TELEGRAM_BOT_TOKEN = "8771407234:AAERI4Thh8HHTokRi8QoK4b3cPltf72nmU4"
     const ADMIN_CHAT_ID = "7787131118"
     
     const CAFE_LOCATION = {

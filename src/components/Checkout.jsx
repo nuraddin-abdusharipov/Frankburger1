@@ -32,22 +32,19 @@ function Checkout() {
     
     const CAFE_LOCATION = {
         lat: 41.3776046,
-        lng: 60,3724037,
+        lng: 60.3724037, // Tuzatildi: vergul nuqtaga almashtirildi
         name: "Frank Burger"
     }
     
     const DELIVERY_RATE_PER_KM = 500
     const FREE_DELIVERY_DISTANCE = 1
 
-    // Telegram Web App ni ishga tushirish - soddalashtirilgan
+    // Telegram Web App ni ishga tushirish
     useEffect(() => {
-        // Faqat Telegram Web App mavjud bo'lsa
         if (window.Telegram?.WebApp) {
-            // Kengaytirish
             window.Telegram.WebApp.expand()
         }
         
-        // Foydalanuvchi ma'lumotlarini olish
         const tgUser = getTelegramUser()
         
         if (tgUser && tgUser.id) {
@@ -60,7 +57,6 @@ function Checkout() {
             }))
         }
         
-        // Inputlarni to'g'ri ishlashi uchun event listener
         const enableInputs = () => {
             const inputs = document.querySelectorAll('input, textarea, select')
             inputs.forEach(input => {
@@ -69,12 +65,9 @@ function Checkout() {
             })
         }
         
-        // Bir oz kechikish bilan ishga tushirish
         setTimeout(enableInputs, 100)
-        
     }, [])
 
-    // Input o'zgarishlari
     const handleInputChange = (e) => {
         const { name, value } = e.target
         setFormData(prev => ({
@@ -83,13 +76,10 @@ function Checkout() {
         }))
     }
 
-    // Input fokuslanganda - hech qanday to'siq bo'lmasligi kerak
     const handleInputFocus = (e) => {
-        // Inputga fokus berish
         e.target.focus()
     }
 
-    // OSRM API orqali masofani hisoblash
     const calculateRoute = async (startLat, startLng, endLat, endLng) => {
         try {
             const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`
@@ -130,52 +120,79 @@ function Checkout() {
             routeLayerRef.current.remove()
         }
         
-        routeLayerRef.current = window.L.polyline(coordinates, {
-            color: '#ff6b35',
-            weight: 5,
-            opacity: 0.9,
-            lineJoin: 'round',
-            lineCap: 'round'
-        }).addTo(mapRef.current)
-        
-        const bounds = routeLayerRef.current.getBounds()
-        if (bounds.isValid()) {
-            mapRef.current.fitBounds(bounds, {
-                padding: [50, 50]
-            })
+        try {
+            routeLayerRef.current = window.L.polyline(coordinates, {
+                color: '#ff6b35',
+                weight: 5,
+                opacity: 0.9,
+                lineJoin: 'round',
+                lineCap: 'round'
+            }).addTo(mapRef.current)
+            
+            const bounds = routeLayerRef.current.getBounds()
+            if (bounds.isValid()) {
+                mapRef.current.fitBounds(bounds, {
+                    padding: [50, 50]
+                })
+            }
+        } catch (error) {
+            console.error('Draw route error:', error)
         }
     }
 
+    // Cart ma'lumotlarini yuklash
     useEffect(() => {
         const savedCart = localStorage.getItem('cart')
         if (!savedCart || JSON.parse(savedCart).length === 0) {
             navigate('/cart')
+        } else {
+            setCart(JSON.parse(savedCart))
         }
-        setCart(JSON.parse(savedCart || '[]'))
     }, [navigate])
 
+    // Map yuklash
     useEffect(() => {
+        // Leaflet CSS ni yuklash
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+        document.head.appendChild(link)
+
+        // Leaflet JS ni yuklash
         const script = document.createElement('script')
         script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
         script.onload = () => {
-            const link = document.createElement('link')
-            link.rel = 'stylesheet'
-            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-            document.head.appendChild(link)
             setMapLoaded(true)
         }
+        script.onerror = () => {
+            console.error('Leaflet yuklanmadi')
+        }
         document.head.appendChild(script)
+
+        return () => {
+            // Tozalash
+            if (mapRef.current) {
+                mapRef.current.remove()
+                mapRef.current = null
+            }
+        }
     }, [])
 
+    // Map yaratish
     useEffect(() => {
-        if (mapLoaded && !mapRef.current && window.L) {
+        if (!mapLoaded || !window.L || mapRef.current) return
+
+        try {
             const map = window.L.map('map').setView([CAFE_LOCATION.lat, CAFE_LOCATION.lng], 13)
+            
             window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
             }).addTo(map)
+            
             mapRef.current = map
 
+            // Cafe marker
             const cafeIcon = window.L.divIcon({
                 className: 'cafe-marker',
                 html: `
@@ -223,6 +240,7 @@ function Checkout() {
                 </div>
             `)
 
+            // User marker
             const userIcon = window.L.divIcon({
                 className: 'user-marker',
                 html: `
@@ -258,6 +276,7 @@ function Checkout() {
                 popupAnchor: [0, -40]
             })
 
+            // Map click event
             map.on('click', async (e) => {
                 if (markerRef.current) {
                     markerRef.current.remove()
@@ -305,6 +324,7 @@ function Checkout() {
                     
                     hapticFeedback()
                 } else {
+                    // Havo masofasi hisoblash
                     const R = 6371
                     const dLat = (userLat - CAFE_LOCATION.lat) * Math.PI / 180
                     const dLng = (userLng - CAFE_LOCATION.lng) * Math.PI / 180
@@ -334,12 +354,8 @@ function Checkout() {
                 }
             })
 
-            return () => {
-                if (mapRef.current) {
-                    mapRef.current.remove()
-                    mapRef.current = null
-                }
-            }
+        } catch (error) {
+            console.error('Map yaratish xatosi:', error)
         }
     }, [mapLoaded])
 

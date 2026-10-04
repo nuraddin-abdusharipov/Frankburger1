@@ -36,7 +36,7 @@ function Checkout() {
         name: "Frank Burger"
     }
 
-    // Xabarnomani xavfsiz ko'rsatish (brauzerda ham, Telegramda ham)
+    // Xavfsiz xabarnoma ko'rsatish
     const notify = (msg) => {
         try {
             if (typeof showTelegramAlert === 'function') {
@@ -62,16 +62,20 @@ function Checkout() {
             console.warn('Telegram expand error:', e)
         }
 
-        const tgUser = typeof getTelegramUser === 'function' ? getTelegramUser() : null
+        try {
+            const tgUser = typeof getTelegramUser === 'function' ? getTelegramUser() : null
 
-        if (tgUser && tgUser.id) {
-            setTelegramId(tgUser.id)
-            setUserName(tgUser.firstName || '')
-            setFormData(prev => ({
-                ...prev,
-                firstName: tgUser.firstName || '',
-                lastName: tgUser.lastName || ''
-            }))
+            if (tgUser && tgUser.id) {
+                setTelegramId(tgUser.id)
+                setUserName(tgUser.firstName || '')
+                setFormData(prev => ({
+                    ...prev,
+                    firstName: tgUser.firstName || '',
+                    lastName: tgUser.lastName || ''
+                }))
+            }
+        } catch (err) {
+            console.warn('tgUser olishda xato:', err)
         }
 
         const enableInputs = () => {
@@ -147,7 +151,7 @@ function Checkout() {
         }
     }
 
-    // Cart ma'lumotlarini yuklash
+    // Cart ma'lumotlarini tekshirish
     useEffect(() => {
         try {
             const savedCart = localStorage.getItem('cart')
@@ -183,7 +187,7 @@ function Checkout() {
         }
     }, [])
 
-    // Map yaratish va click hodisasi
+    // Map yaratish
     useEffect(() => {
         if (!mapLoaded || !window.L || mapRef.current) return
 
@@ -299,12 +303,12 @@ function Checkout() {
     }, [mapLoaded])
 
     const productsTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-    const totalPrice = productsTotal // Yetkazib berish tekinga aylangani uchun to'g'ridan-to'g'ri teng
+    const totalPrice = productsTotal
 
     const sendToAdmin = async (orderData) => {
         try {
             let message = `🆕 YANGI BUYURTMA! 🆕\n\n`
-            message += `🤖 Telegram ID: ${orderData.telegramId || "Aniqlanmadi"}\n`
+            message += `🤖 Telegram ID: ${orderData.telegramId || "Brauzerdan"}\n`
             message += `👤 Mijoz: ${orderData.customer.fullName}\n`
             message += `📞 Telefon: ${orderData.customer.phone}\n`
             message += `📍 Manzil: ${orderData.delivery.address}\n`
@@ -335,7 +339,7 @@ function Checkout() {
     }
 
     const sendToUser = async (orderData) => {
-        if (!orderData.telegramId) return true // Telegram ID bo'lmasa xato chiqarmay o'tkazib yuboradi
+        if (!orderData.telegramId) return true
 
         try {
             let message = `🍔 FRANK BURGER 🍔\n\n`
@@ -378,6 +382,7 @@ function Checkout() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        console.log("1. Yuborish bosildi")
 
         if (!selectedLocation) {
             notify("❌ Iltimos, xaritadan manzilingizni belgilang!")
@@ -389,12 +394,13 @@ function Checkout() {
             return
         }
 
-        if (!formData.phone.trim()) {
+        if (!formData.phone || !formData.phone.trim()) {
             notify("❌ Iltimos, telefon raqamingizni kiriting!")
             return
         }
 
         setLoading(true)
+
         try {
             if (typeof hapticFeedback === 'function') hapticFeedback()
         } catch (err) {}
@@ -404,9 +410,9 @@ function Checkout() {
             orderId: Date.now(),
             orderDate: new Date().toISOString(),
             customer: {
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+                firstName: formData.firstName || '',
+                lastName: formData.lastName || '',
+                fullName: `${formData.firstName || ''} ${formData.lastName || ''}`.trim(),
                 phone: formData.phone
             },
             delivery: {
@@ -415,7 +421,7 @@ function Checkout() {
                 cafeLocation: CAFE_LOCATION,
                 distance: distance || 0,
                 deliveryTime: formData.deliveryTime,
-                notes: formData.notes
+                notes: formData.notes || ''
             },
             items: cart.map(item => ({
                 id: item.id,
@@ -429,11 +435,13 @@ function Checkout() {
             status: "Yangi"
         }
 
+        console.log("2. OrderData shakllantirildi:", orderData)
+
         try {
             const firebaseResult = await saveToFirebase(orderData)
+            console.log("3. Firebase javobi:", firebaseResult)
 
             if (firebaseResult.success) {
-                // Telegramga parallel xabar yuborish
                 await Promise.allSettled([
                     sendToAdmin(orderData),
                     sendToUser(orderData)
@@ -447,7 +455,7 @@ function Checkout() {
             }
         } catch (err) {
             console.error('Buyurtma yuborishda umumiy xato:', err)
-            notify("❌ Buyurtma yuborishda xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.")
+            notify("❌ Buyurtma yuborishda xatolik yuz berdi. Iltimos konsolni tekshiring.")
         } finally {
             setLoading(false)
         }

@@ -11,6 +11,10 @@
     display: none;
 }
 
+body {
+    -webkit-tap-highlight-color: transparent;
+}
+
 .checkout-header {
     padding: 15px 20px;
     display: flex;
@@ -55,6 +59,10 @@
     padding: 16px;
 }
 
+form, .form-group, .form-section {
+    pointer-events: auto !important;
+}
+
 .form-section {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
@@ -91,25 +99,27 @@
     font-weight: 500;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+input, textarea, select {
     width: 100%;
     padding: 12px 14px;
-    background: rgba(255, 255, 255, 0.08);
+    background-color: #333 !important;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 14px;
     font-size: 14px;
-    color: white;
+    color: white !important;
     transition: all 0.3s ease;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    cursor: text !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: #ff6b35;
-    background: rgba(255, 107, 53, 0.1);
+input:focus, textarea:focus, select:focus {
+    outline: 2px solid #ff6b35 !important;
+    background-color: rgba(255, 107, 53, 0.15) !important;
     box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
 }
 
@@ -118,11 +128,17 @@
     color: rgba(255, 255, 255, 0.3);
 }
 
+select option {
+    background: #1a1a2e;
+    color: white;
+}
+
 .map-container {
     margin-bottom: 16px;
 }
 
 .map {
+    width: 100%;
     height: 320px;
     border-radius: 20px;
     margin-bottom: 12px;
@@ -139,6 +155,38 @@
     border-radius: 12px;
 }
 
+.map-hint:has(✅) {
+    color: #27ae60;
+}
+
+/* Masofa bloki (yetkazib berish narxisiz) */
+.distance-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin-top: 10px;
+    border-left: 4px solid #ff6b35;
+}
+
+.distance-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.distance-details span {
+    font-size: 14px;
+    color: #bbb;
+}
+
+.distance-details strong {
+    font-size: 16px;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Buyurtma hisob-kitob qismi */
 .order-summary {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 16px;
@@ -153,20 +201,50 @@
     border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
 }
 
-.order-total {
-    display: flex;
-    justify-content: space-between;
-    padding: 16px 0 0;
-    margin-top: 10px;
-    font-size: 20px;
-    font-weight: 700;
+.order-delivery-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 12px;
+    margin: 12px 0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.delivery-distance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.delivery-distance-row span:first-child {
+    color: #aaa;
+    font-size: 14px;
+}
+
+.delivery-distance-row span:last-child {
+    font-weight: 600;
+    color: #fff;
+}
+
+.order-total,
+.order-grand-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0 0;
+    margin-top: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.total-amount,
 .order-total strong:last-child {
     background: linear-gradient(135deg, #ff6b35, #ff3b00);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    font-size: 20px;
 }
 
 .submit-btn {
@@ -179,7 +257,7 @@
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    margin-top: 10px;
+    margin-top: 15px;
     transition: all 0.3s ease;
     box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
 }
@@ -198,269 +276,12 @@
     cursor: not-allowed;
 }
 
-.map-hint:has(✅) {
-    color: #27ae60;
-}
-
-select option {
-    background: #1a1a2e;
-    color: white;
-}
-.distance-info {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 12px;
-    padding: 12px 15px;
-    margin-top: 10px;
-    border-left: 4px solid #ff6b35;
-}
-
-.distance-details,
-.delivery-fee-details {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-}
-
-.distance-details {
-    border-bottom: 1px solid #dee2e6;
-}
-
-.distance-details span,
-.delivery-fee-details span {
-    font-size: 14px;
-    color: #6c757d;
-}
-
-.distance-details strong {
-    font-size: 16px;
-    color: #495057;
-    font-weight: 600;
-}
-
-.delivery-fee-details strong {
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.fee-amount {
-    color: #ff6b35;
-}
-
-.free-delivery {
-    color: #28a745;
-}
-
-.fee-info {
-    background: #fff3cd;
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin-top: 10px;
-    font-size: 12px;
-    color: #856404;
-    text-align: center;
-}
-
-.order-delivery-breakdown {
-    margin: 15px 0;
-    padding: 12px 0;
-    border-top: 1px dashed #dee2e6;
-    border-bottom: 1px dashed #dee2e6;
-}
-
-.delivery-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 16px;
-    margin-bottom: 5px;
-}
-
-.delivery-row span:first-child {
-    color: #6c757d;
-}
-
-.delivery-row .free {
-    color: #28a745;
-    font-weight: 600;
-}
-
-.delivery-calculation {
-    text-align: right;
-    font-size: 11px;
-    color: #adb5bd;
-}
-
-.order-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 18px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 2px solid #ff6b35;
-}
-
-.map {
-    width: 100%;
-    height: 400px;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.map-hint {
-    text-align: center;
-    font-size: 12px;
-    color: #6c757d;
-    margin-top: 8px;
-}
-
 @media (max-width: 768px) {
     .distance-info {
         padding: 10px;
     }
     
-    .distance-details strong,
-    .delivery-fee-details strong {
+    .distance-details strong {
         font-size: 14px;
     }
-    
-    .delivery-fee-details strong {
-        font-size: 16px;
-    }
 }
-.order-delivery-info {
-    background: #f8f9fa;
-    border-radius: 10px;
-    padding: 12px;
-    margin: 12px 0;
-    border: 1px solid #e9ecef;
-}
-
-.delivery-distance-row,
-.delivery-fee-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-}
-
-.delivery-distance-row span:first-child,
-.delivery-fee-row span:first-child {
-    color: #6c757d;
-    font-size: 14px;
-}
-
-.delivery-distance-row span:last-child {
-    font-weight: 600;
-    color: #495057;
-}
-
-.delivery-fee-row span:last-child {
-    font-weight: 700;
-    font-size: 16px;
-}
-
-.free-delivery-text {
-    color: #28a745 !important;
-}
-
-.delivery-calculation-note,
-.free-delivery-note {
-    text-align: right;
-    margin-top: 8px;
-    padding-top: 6px;
-    border-top: 1px dashed #dee2e6;
-}
-
-.delivery-calculation-note small {
-    color: #ff6b35;
-    font-size: 11px;
-}
-
-.free-delivery-note small {
-    color: #28a745;
-    font-size: 11px;
-}
-
-.order-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-top: 1px solid #dee2e6;
-}
-
-.order-total-delivery {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 0 10px 0;
-    color: #ff6b35;
-    font-size: 14px;
-    border-bottom: 1px dashed #dee2e6;
-}
-
-.order-grand-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0 0 0;
-    font-size: 18px;
-}
-
-.total-amount {
-    color: #ff6b35;
-    font-size: 20px;
-}
-
-input, textarea, select {
-    -webkit-user-select: text !important;
-    user-select: text !important;
-    cursor: text !important;
-    pointer-events: auto !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: block !important;
-}
-
-input:focus, textarea:focus, select:focus {
-    outline: 2px solid #ff6b35;
-    background-color: #fff;
-}
-
-body {
-    -webkit-tap-highlight-color: transparent;
-}
-
-form {
-    pointer-events: auto !important;
-}
-
-.form-group {
-    pointer-events: auto !important;
-}
-
-/* Inputlarni Telegram Web App da to'g'ri ishlashi uchun */
-input, textarea, select {
-    -webkit-user-select: text !important;
-    user-select: text !important;
-    cursor: text !important;
-    pointer-events: auto !important;
-    opacity: 1 !important;
-    background-color: #333 !important;
-    color: white !important;
-}
-
-input:focus, textarea:focus, select:focus {
-    outline: 2px solid #ff6b35 !important;
-    background-color: rgba(255, 166, 0, 0.25) !important;
-}
-
-/* Form va inputlarni to'liq interaktiv qilish */
-form, .form-group, .form-section {
-    pointer-events: auto !important;
-}
-
-/* Inputlar uchun z-index */

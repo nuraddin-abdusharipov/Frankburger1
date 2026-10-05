@@ -23,13 +23,13 @@ import {
 } from 'firebase/storage';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAwj1VFbqzhB-S4SQFpdjjvrrZYuOfwi3k",
-    authDomain: "frankburger-cec89.firebaseapp.com",
-    projectId: "frankburger-cec89",
-    storageBucket: "frankburger-cec89.firebasestorage.app",
-    messagingSenderId: "258948329964",
-    appId: "1:258948329964:web:3f97c97ab088bbece4d0c9",
-    measurementId: "G-NWPGL7P057"
+    apiKey: "AIzaSyAl21_n_-ARdx1IveZW4DVSEW4ZKlZRjTI",
+  authDomain: "frank-ad1d8.firebaseapp.com",
+  projectId: "frank-ad1d8",
+  storageBucket: "frank-ad1d8.firebasestorage.app",
+  messagingSenderId: "474583116258",
+  appId: "1:474583116258:web:a7ea46072a080a6a58b1bb",
+  measurementId: "G-GQ4DN576ME"
 };
 
 const app = initializeApp(firebaseConfig);

@@ -28,7 +28,7 @@ function Checkout() {
     const cafeMarkerRef = useRef(null)
 
     const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TOKEN
-    const ADMIN_CHAT_ID = "7787131118"
+    const ADMIN_CHAT_ID = "9179595003"
 
     const CAFE_LOCATION = {
         lat: 41.3973786,

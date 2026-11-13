@@ -222,7 +222,7 @@ function Checkout() {
 
             cafeMarkerRef.current.bindPopup(`
                 <div style="font-family: sans-serif; padding: 6px; text-align: center;">
-                    🍔 <strong>${CAFE_LOCATION.name}</strong><br/>
+                    🍽 <strong>${CAFE_LOCATION.name}</strong><br/>
                     📍 Bizning manzil
                 </div>
             `)

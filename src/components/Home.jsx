@@ -123,7 +123,7 @@ function Home() {
     return (
         <div className="Home">
             <nav className='nav'>
-                <img src="/logo.png" alt="Logo" />
+                <img src="/log.png" alt="Logo" />
             </nav>
 
             <div 

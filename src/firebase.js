@@ -23,15 +23,14 @@ import {
 } from 'firebase/storage';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDHRB1Kug-xJEeLT0RvX0s2cdQ4v_7rblg",
-  authDomain: "frankburger-ab84a.firebaseapp.com",
-  projectId: "frankburger-ab84a",
-  storageBucket: "frankburger-ab84a.firebasestorage.app",
-  messagingSenderId: "393206485013",
-  appId: "1:393206485013:web:0e8c2a7cffee83d79cfe1c",
-  measurementId: "G-0YCW4YDKE2"
+  apiKey: "AIzaSyC6uTuDkTnZAdZGRrHvkJlRn2sMgtxgsRs",
+  authDomain: "momoning-taomlari-2.firebaseapp.com",
+  projectId: "momoning-taomlari-2",
+  storageBucket: "momoning-taomlari-2.firebasestorage.app",
+  messagingSenderId: "470558611119",
+  appId: "1:470558611119:web:c8fca746c6dbe6c4c1665a",
+  measurementId: "G-K06D4RFJY1"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);

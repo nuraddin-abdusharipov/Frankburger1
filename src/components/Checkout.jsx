@@ -27,13 +27,13 @@ function Checkout() {
     const routeLayerRef = useRef(null)
     const cafeMarkerRef = useRef(null)
 
-    const TELEGRAM_BOT_TOKEN = "8915752062:AAGXACX_PUZpwflcQQS803hSTy9vqZ39zas"
+    const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TOKEN
     const ADMIN_CHAT_ID = "7787131118"
 
     const CAFE_LOCATION = {
         lat: 41.3776046,
         lng: 60.3724037,
-        name: "Frank Burger"
+        name: "Momoning taomlari 2"
     }
 
     // Xavfsiz xabarnoma ko'rsatish

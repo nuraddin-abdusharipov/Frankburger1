@@ -31,8 +31,8 @@ function Checkout() {
     const ADMIN_CHAT_ID = "7787131118"
 
     const CAFE_LOCATION = {
-        lat: 41,3973786,
-        lng: 60,3601259,
+        lat: 41.3973786,
+        lng: 60.3601259,
         name: "Momoning taomlari 2"
     }
 

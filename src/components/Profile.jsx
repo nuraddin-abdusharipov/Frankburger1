@@ -13,7 +13,7 @@ function Profile() {
     const [totalSpent, setTotalSpent] = useState(0)
     const [loading, setLoading] = useState(true)
 
-    const ADMIN_IDS = [7164122768, 7787131118]
+    const ADMIN_IDS = [7164122768, 7787131118, 9179595003]
 
     useEffect(() => {
     const tg = window.Telegram?.WebApp

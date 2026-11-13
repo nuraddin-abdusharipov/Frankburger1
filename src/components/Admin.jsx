@@ -18,8 +18,7 @@ function Admin() {
     const mapInstanceRef = useRef(null)
 
     const ADMIN_IDS = [7164122768, 7787131118]
-    const TELEGRAM_BOT_TOKEN = "8771407234:AAEzpKX2-nm59dbZ-8vjNYy2JZlelQMsRtM"
-
+    const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TOKEN
     useEffect(() => {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
